@@ -69,11 +69,74 @@ BEGIN
   stim_proc : PROCESS
   BEGIN
 
-    rst <= '0';
-
+    rst <= '1';
+    item_select <= '0';
+    coins <= "00";
+    dispensed <= "00";
+    WAIT FOR clk_period;
     -- ****Test cases****
     -- Write the series of test cases here to verify the correct working of your design.
     -- Provide the input stimulus to the signals : item_select, coins
+    
+    -- buying a soft drink - no change
+    rst <= '0';
+    item_select <= '0';
+    coins <= "10";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    WAIT FOR clk_period;
 
+    -- buying a soft drink - $1 change
+    item_select <= '0';
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    
+    -- buying a soft drink - $2 change
+    item_select <= '0';
+    coins <= "01";
+    WAIT FOR clk_period;
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    WAIT FOR clk_period;
+
+        
+    -- buying a granola bar - no change
+    item_select <= '1';
+    WAIT FOR clk_period;
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "01";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    
+    -- buying a granola bar - $1 change
+    item_select <= '1';
+    WAIT FOR clk_period;
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "10";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+    
+    -- buying a granola bar - $6 change
+    item_select <= '1';
+    WAIT FOR clk_period;
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "11";
+    WAIT FOR clk_period;
+    coins <= "00";
+    WAIT FOR clk_period;
+
+    
   END PROCESS;
 END Behavioral;
