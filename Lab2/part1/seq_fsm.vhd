@@ -58,7 +58,7 @@ BEGIN
   -- the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
   -- you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
   -- same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
-  PROCESS (clk)
+  PROCESS (clk, reset)
   BEGIN
     IF (reset = '1') THEN
       state_reg <= A;
@@ -112,7 +112,7 @@ BEGIN
           state_next <= A;
           output_detect <= '0';
         ELSE
-          state_next <= B;
+          state_next <= C;
           output_detect <= '1';
         END IF;
 
