@@ -59,6 +59,9 @@ BEGIN
   BEGIN
 
     -- test sequence : "0110110"
+    sequence_in <= '0';
+    rst <= '1';
+    WAIT FOR clk_period;
     rst <= '0';
     sequence_in <= '0';
     WAIT FOR clk_period;
@@ -81,5 +84,7 @@ BEGIN
     sequence_in <= '1';
     WAIT FOR clk_period;
 
+    sequence_in <= '0';
+    WAIT FOR clk_period;
   END PROCESS;
 END Behavioral;
