@@ -22,16 +22,17 @@
 -- Hand over the change to the customer, and then dispense the item (soft drink/granola bar)
 ----------------------------------------------------------------------------------
 
--- 0: ABCDEF
--- 1: BC
--- 2: ABDEG
--- 3: ABCDG
--- 4: BCEFG
--- 5: ACDFG
--- 6: ACDEFG
--- 7: ABC
--- 8: ABCDEFG
--- 9: ABCFG
+-- 0: ABCDEF - 0111111 - 3f
+-- 1: BC - 0000110 - 06 
+-- 2: ABDEG - 1011011 - 5b
+-- 3: ABCDG - 1001111 -4f
+-- 4: BCFG - 1100110 -66
+-- 5: ACDFG - 1101101 - 6d
+-- 6: ACDEFG - 1111101 - 7d
+
+-- 7: ABC - 0000111 - 07
+-- 8: ABCDEFG - 1111111 - 7f
+-- 9: ABCFG - 1100111 - 67
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE ieee.numeric_std.ALL;
@@ -88,7 +89,7 @@ BEGIN
   --  you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
   --  same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
 
-  PROCESS (clk, reset)
+  PROCESS (clk_o, reset)
   BEGIN
     IF (reset = '1') THEN
       ---------------------------------------------
@@ -96,7 +97,7 @@ BEGIN
       ---------------------------------------------
       present_state <= sum_0;
 
-    ELSIF (clk'event AND rising_edge(clk)) THEN
+    ELSIF (clk_o'event AND rising_edge(clk_o)) THEN
       ---------------------------------------------
       -- *** write one line of code to update the present state
       ---------------------------------------------
@@ -115,7 +116,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
-        display_sum <= "0111111";
+        display_sum <= "0111111"; -- sum = 0
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
@@ -171,12 +172,17 @@ BEGIN
         -- you may use any conditional assignment format
         -- based on the inserted coins, update the next state
         ---------------------------------------------
-        CASE coins_in IS
-          WHEN "00" => next_state <= sum_1;
-          WHEN "01" => next_state <= sum_2;
-          WHEN "10" => next_state <= sum_3;
-          WHEN OTHERS => next_state <= sum_4; -- coins_in="11"
-        END CASE;
+        IF (item_sel = '0') THEN
+            change_out <= "00";
+            next_state <= dispense;
+        ELSE
+            CASE coins_in IS
+              WHEN "00" => next_state <= sum_2;
+              WHEN "01" => next_state <= sum_3;
+              WHEN "10" => next_state <= sum_4;
+              WHEN OTHERS => next_state <= sum_5; -- coins_in="11"
+            END CASE;
+        END IF;
       WHEN sum_3 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -191,8 +197,18 @@ BEGIN
         --*** update the design lines when coins inserted are 00/01/10/11
         -- you may use any conditional assignment format
         -- based on the inserted coins, update the next state
-
         ---------------------------------------------
+        IF (item_sel = '0') THEN
+            change_out <= "01";
+            next_state <= dispense;
+        ELSE
+            CASE coins_in IS
+              WHEN "00" => next_state <= sum_3;
+              WHEN "01" => next_state <= sum_4;
+              WHEN "10" => next_state <= sum_5;
+              WHEN OTHERS => next_state <= sum_6; -- coins_in="11"
+            END CASE;
+        END IF;
       WHEN sum_4 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -200,7 +216,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
-        display_sum <= "1001111";
+        display_sum <= "1100110";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
@@ -208,7 +224,13 @@ BEGIN
         -- based on the inserted coins, update the next state
 
         ---------------------------------------------
-
+        IF (item_sel = '0') THEN
+            change_out <= "10";
+            next_state <= dispense;
+        ELSE
+            change_out <= "00";
+            next_state <= dispense;
+        END IF;
       WHEN sum_5 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -216,6 +238,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "1101101";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
@@ -223,6 +246,8 @@ BEGIN
         -- based on the inserted coins, update the next state
 
         ---------------------------------------------
+        change_out <= "01";
+        next_state <= dispense;
       WHEN sum_6 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -230,29 +255,31 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
-
+        display_sum <= "1111101";
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
         -- you may use any conditional assignment format
         -- based on the inserted coins, update the next state
-
         ---------------------------------------------
+        change_out <= "10";
+        next_state <= dispense;
       WHEN dispense =>
-        change_out <= "00";
         display_sum <= "0111111";
-
+        change_out <= "00";
         IF (item_sel = '0') THEN
           ---------------------------------------------
           --** write two assignment statements to dispense the soft drink and granola bar
-
           ---------------------------------------------
+          soft_drink <= '1';
+          granola_bar <='0';
         ELSE
           ---------------------------------------------
           --** write two assignment statements to dispense the soft drink and granola bar
-
           ---------------------------------------------
-
+          soft_drink <= '0';
+          granola_bar <='1';
         END IF;
+        
         next_state <= sum_0;
 
     END CASE;
