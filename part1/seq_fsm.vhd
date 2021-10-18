@@ -61,13 +61,13 @@ BEGIN
   PROCESS (clk)
   BEGIN
     IF (reset = '1') THEN
-      state_reg <= B;
-    ELSIF (rising_edge(clk)) THEN
+      state_reg <= A;
+    ELSIF (clk'event AND rising_edge(clk)) THEN
       state_reg <= state_next;
     END IF;
   END PROCESS;
 
-  PROCESS (state_reg) -- complete the sensitivity list
+  PROCESS (seq_in, state_reg) -- complete the sensitivity list
   BEGIN
     CASE state_reg IS
       WHEN A => -- IDLE
