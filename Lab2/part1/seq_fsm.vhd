@@ -58,16 +58,16 @@ BEGIN
   -- the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
   -- you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
   -- same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
-  PROCESS (clk, reset)
+  PROCESS (clk_o, reset)
   BEGIN
     IF (reset = '1') THEN
       state_reg <= A;
-    ELSIF (clk'event AND rising_edge(clk)) THEN
+    ELSIF (clk_o'event AND rising_edge(clk_o)) THEN
       state_reg <= state_next;
     END IF;
   END PROCESS;
 
-  PROCESS (seq_in, state_reg) -- complete the sensitivity list
+  PROCESS (state_reg) -- complete the sensitivity list
   BEGIN
     CASE state_reg IS
       WHEN A => -- IDLE
