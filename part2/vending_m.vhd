@@ -93,34 +93,42 @@ BEGIN
     IF (reset = '1') THEN
       ---------------------------------------------
       -- *** write one line of code to update the present state when reset=1
-
       ---------------------------------------------
-    ELSIF (rising_edge(clk)) THEN
+      present_state <= sum_0;
+
+    ELSIF (clk'event AND rising_edge(clk)) THEN
       ---------------------------------------------
       -- *** write one line of code to update the present state
-
       ---------------------------------------------
+      present_state <= next_state;
     END IF;
   END PROCESS;
 
-  PROCESS (present_state, coins_in) --*** complete the sensitivity list
+  PROCESS (present_state, coins_in, item_sel) --*** complete the sensitivity list
   BEGIN
     CASE present_state IS
       WHEN sum_0 =>
         soft_drink <= '0';
         granola_bar <= '0';
         change_out <= "00";
+
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "0111111";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
         -- you may use any conditional assignment format
         -- based on the inserted coins, update the next state
         -- for example, if the coins inserted is "10" i.e., 2$, go to state sum_2.
-
         ---------------------------------------------
+        CASE coins_in IS
+          WHEN "00" => next_state <= sum_0;
+          WHEN "01" => next_state <= sum_1;
+          WHEN "10" => next_state <= sum_2;
+          WHEN OTHERS => next_state <= sum_3; -- coins_in="11"
+        END CASE;
       WHEN sum_1 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -129,6 +137,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "0000110";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
@@ -140,6 +149,12 @@ BEGIN
         -- In this case inside sum_2, you now want to return if any change and then dispense the soft drink.
         -- Make sure, from "sum_2" to "sum_6", you also take care to even check if item_sel=0 or item_sel=1 and update the state accordingly. 
         ---------------------------------------------
+        CASE coins_in IS
+          WHEN "00" => next_state <= sum_1;
+          WHEN "01" => next_state <= sum_2;
+          WHEN "10" => next_state <= sum_3;
+          WHEN OTHERS => next_state <= sum_4; -- coins_in="11"
+        END CASE;
 
       WHEN sum_2 =>
         soft_drink <= '0';
@@ -149,13 +164,19 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "1011011";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
         -- you may use any conditional assignment format
         -- based on the inserted coins, update the next state
-
         ---------------------------------------------
+        CASE coins_in IS
+          WHEN "00" => next_state <= sum_1;
+          WHEN "01" => next_state <= sum_2;
+          WHEN "10" => next_state <= sum_3;
+          WHEN OTHERS => next_state <= sum_4; -- coins_in="11"
+        END CASE;
       WHEN sum_3 =>
         soft_drink <= '0';
         granola_bar <= '0';
@@ -164,6 +185,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "1001111";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11
@@ -178,6 +200,7 @@ BEGIN
         ---------------------------------------------
         --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
+        display_sum <= "1001111";
 
         ---------------------------------------------
         --*** update the design lines when coins inserted are 00/01/10/11

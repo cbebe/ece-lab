@@ -75,5 +75,11 @@ BEGIN
     sequence_in <= '0';
     WAIT FOR clk_period;
 
+    -- test overlap : "11"
+    sequence_in <= '1';
+    WAIT FOR clk_period;
+    sequence_in <= '1';
+    WAIT FOR clk_period;
+
   END PROCESS;
 END Behavioral;
