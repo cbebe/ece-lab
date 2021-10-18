@@ -32,205 +32,206 @@
 -- 7: ABC
 -- 8: ABCDEFG
 -- 9: ABCFG
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE ieee.numeric_std.ALL;
+ENTITY vending_m IS
+  PORT (
+    clk : IN STD_LOGIC;
+    reset : IN STD_LOGIC;
+    item_sel : IN STD_LOGIC; -- sel=0 for soft drink (2$), sel=1 for granola bar (4$)
+    coins_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- "00" - 0$, "01" - 1$, "10" - 2$, "11" - 3$
+    change_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0); -- changeout is displayed on two leds - "00" - 0$
+    -- "01" - 1$, "10" - 2$ and "11" - 3$
+    display_sum : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display the current sum of inserted money on the seven segment
+    select_segment : OUT STD_LOGIC; -- select the left or right segment
+    soft_drink : OUT STD_LOGIC; -- turn on the LED to dispense soft drink
+    granola_bar : OUT STD_LOGIC); -- turn on the LED to dispense granola bar
 
+END vending_m;
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use ieee.numeric_std.all;
+ARCHITECTURE Behavioral OF vending_m IS
 
+  ---------------------------------------------
+  -- *** Add the clk_divider component here
+  -- Remember, you want to add this component here and then use it later when you wish to have the divided clock by a factor of 62500000
+  ---------------------------------------------
+  COMPONENT clk_divider IS
+    PORT (
+      clk_in : IN STD_LOGIC;
+      clk_out : OUT STD_LOGIC);
+  END COMPONENT;
 
-entity vending_m is
-  Port ( clk            : in std_logic;
-         reset          : in std_logic;
-         item_sel       : in std_logic;                           -- sel=0 for soft drink (2$), sel=1 for granola bar (4$)
-         coins_in       : in std_logic_vector(1 downto 0);        -- "00" - 0$, "01" - 1$, "10" - 2$, "11" - 3$
-         change_out     : out std_logic_vector(1 downto 0);       -- changeout is displayed on two leds - "00" - 0$
-                                                                  -- "01" - 1$, "10" - 2$ and "11" - 3$
-         display_sum    : out std_logic_vector(6 downto 0);       -- display the current sum of inserted money on the seven segment
-         select_segment : out std_logic;                          -- select the left or right segment
-         soft_drink       : out std_logic;                        -- turn on the LED to dispense soft drink
-         granola_bar      : out std_logic);                       -- turn on the LED to dispense granola bar
-         
-end vending_m;
+  SIGNAL clk_o : STD_LOGIC;
+  TYPE state_type IS (sum_0, -- state names represent the total sum of inserted money by the user
+    sum_1,
+    sum_2,
+    sum_3,
+    sum_4,
+    sum_5,
+    sum_6,
+    dispense);
 
-architecture Behavioral of vending_m is
+  SIGNAL present_state, next_state : state_type; -- current and next state declaration.
 
----------------------------------------------
--- *** Add the clk_divider component here
--- Remember, you want to add this component here and then use it later when you wish to have the divided clock by a factor of 62500000
----------------------------------------------
+BEGIN
 
-signal clk_o : std_logic;
-type state_type is (sum_0,         -- state names represent the total sum of inserted money by the user
-                    sum_1,
-                    sum_2,
-                    sum_3,
-                    sum_4,
-                    sum_5,
-                    sum_6,
-                    dispense);
+  ---------------------------------------------
+  -- *** port map the clk_divider here
+  CLK_DIV : clk_divider PORT MAP(clk_in => clk, clk_out => clk_o);
 
-signal present_state,next_state: state_type;    -- current and next state declaration.
+  ---------------------------------------------
 
-begin
+  select_segment <= '0'; -- you may use either the left or the right seven segment.
 
----------------------------------------------
--- *** port map the clk_divider here
+  --  the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
+  --  you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
+  --  same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
 
----------------------------------------------
+  PROCESS (clk, reset)
+  BEGIN
+    IF (reset = '1') THEN
+      ---------------------------------------------
+      -- *** write one line of code to update the present state when reset=1
 
-    select_segment <= '0';  -- you may use either the left or the right seven segment.
+      ---------------------------------------------
+    ELSIF (rising_edge(clk)) THEN
+      ---------------------------------------------
+      -- *** write one line of code to update the present state
 
---  the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
---  you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
---  same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
+      ---------------------------------------------
+    END IF;
+  END PROCESS;
 
-    process(clk,reset)
-    begin
-        if(reset = '1')then
+  PROCESS (present_state, coins_in) --*** complete the sensitivity list
+  BEGIN
+    CASE present_state IS
+      WHEN sum_0 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+        change_out <= "00";
         ---------------------------------------------
-        -- *** write one line of code to update the present state when reset=1
-        
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
         ---------------------------------------------
-        elsif(rising_edge(clk))then
+
         ---------------------------------------------
-        -- *** write one line of code to update the present state
-        
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
+        -- for example, if the coins inserted is "10" i.e., 2$, go to state sum_2.
+
         ---------------------------------------------
-        end if;
-    end process;
+      WHEN sum_1 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+        change_out <= "00";
 
-    process(present_state,coins_in) --*** complete the sensitivity list
-        begin
-        case present_state is
-            when sum_0 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            change_out <= "00";
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            -- for example, if the coins inserted is "10" i.e., 2$, go to state sum_2.
-                            
-                            ---------------------------------------------
-            when sum_1 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            change_out <= "00";
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
+        -- for example, if the coins inserted is "10" i.e., 2$,
+        -- the total amount inserted till now is 2$ + 1$ = 3$. So, you wish to update the next_state accordingly.
+        -- For example, say, if item_sel=0, and user inserted 1$, so the total amount is 2$. The next state is now, sum_2.
+        -- In this case inside sum_2, you now want to return if any change and then dispense the soft drink.
+        -- Make sure, from "sum_2" to "sum_6", you also take care to even check if item_sel=0 or item_sel=1 and update the state accordingly. 
+        ---------------------------------------------
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            -- for example, if the coins inserted is "10" i.e., 2$,
-                            -- the total amount inserted till now is 2$ + 1$ = 3$. So, you wish to update the next_state accordingly.
-                            
-                            
-                            -- For example, say, if item_sel=0, and user inserted 1$, so the total amount is 2$. The next state is now, sum_2.
-                            -- In this case inside sum_2, you now want to return if any change and then dispense the soft drink.
-                            -- Make sure, from "sum_2" to "sum_6", you also take care to even check if item_sel=0 or item_sel=1 and update the state accordingly. 
-                            ---------------------------------------------
+      WHEN sum_2 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+        change_out <= "00";
 
-            when sum_2 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            change_out <= "00";
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
-                            
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            
-                            ---------------------------------------------
-            when sum_3 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            change_out <= "00";
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            
-                            ---------------------------------------------
-            when sum_4 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            
-                            ---------------------------------------------
+        ---------------------------------------------
+      WHEN sum_3 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+        change_out <= "00";
 
-            when sum_5 =>
-                            soft_drink <= '0';
-                            granola_bar <= '0';
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            
-                            ---------------------------------------------
-            when sum_6 =>
-                            soft_drink <= '0';                       
-                            granola_bar <= '0';                            
-                            
-                            ---------------------------------------------
-                            --*** write one line of code to display the current sum of inserted money on the seven segment display
-                            ---------------------------------------------
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
 
-                            ---------------------------------------------
-                            --*** update the design lines when coins inserted are 00/01/10/11
-                            -- you may use any conditional assignment format
-                            -- based on the inserted coins, update the next state
-                            
-                            ---------------------------------------------
-            when dispense =>
-                            change_out <= "00";
-                            display_sum <= "0111111";
+        ---------------------------------------------
+      WHEN sum_4 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
 
-                            if(item_sel='0')then
-                            ---------------------------------------------
-                            --** write two assignment statements to dispense the soft drink and granola bar
-                                
-                            ---------------------------------------------
-                            else
-                            ---------------------------------------------
-                            --** write two assignment statements to dispense the soft drink and granola bar
-                            
-                            ---------------------------------------------
-                                
-                            end if;
-                            next_state <= sum_0;
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
 
-            end case;
-    end process;
-end Behavioral;
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
+
+        ---------------------------------------------
+
+      WHEN sum_5 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
+
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
+
+        ---------------------------------------------
+      WHEN sum_6 =>
+        soft_drink <= '0';
+        granola_bar <= '0';
+
+        ---------------------------------------------
+        --*** write one line of code to display the current sum of inserted money on the seven segment display
+        ---------------------------------------------
+
+        ---------------------------------------------
+        --*** update the design lines when coins inserted are 00/01/10/11
+        -- you may use any conditional assignment format
+        -- based on the inserted coins, update the next state
+
+        ---------------------------------------------
+      WHEN dispense =>
+        change_out <= "00";
+        display_sum <= "0111111";
+
+        IF (item_sel = '0') THEN
+          ---------------------------------------------
+          --** write two assignment statements to dispense the soft drink and granola bar
+
+          ---------------------------------------------
+        ELSE
+          ---------------------------------------------
+          --** write two assignment statements to dispense the soft drink and granola bar
+
+          ---------------------------------------------
+
+        END IF;
+        next_state <= sum_0;
+
+    END CASE;
+  END PROCESS;
+END Behavioral;

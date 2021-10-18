@@ -1,6 +1,6 @@
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -11,67 +11,69 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity vending_m_tb is
-end vending_m_tb;
+ENTITY vending_m_tb IS
+END vending_m_tb;
 
-architecture Behavioral of vending_m_tb is
+ARCHITECTURE Behavioral OF vending_m_tb IS
 
-component vending_m is 
-  Port ( clk            : in std_logic;
-         reset          : in std_logic;
-         item_sel       : in std_logic;                           -- sel=0 for soft drink (2$), sel=1 for granola bar (4$)
-         coins_in       : in std_logic_vector(1 downto 0);        -- "00" - 0$, "01" - 1$, "10" - 2$, "11" - 3$
-         change_out     : out std_logic_vector(1 downto 0);       -- changeout is displayed on two leds - "00" - 0$
-                                                                  -- "01" - 1$, "10" - 2$ and "11" - 3$
-         display_sum    : out std_logic_vector(6 downto 0);       -- display the current sum of inserted money on the seven segment
-         select_segment : out std_logic;                          -- select the left or right segment
-         soft_drink       : out std_logic;                        -- turn on the LED to dispense soft drink
-         granola_bar      : out std_logic);                       -- turn on the LED to dispense granola bar
-end component;
+  COMPONENT vending_m IS
+    PORT (
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      item_sel : IN STD_LOGIC; -- sel=0 for soft drink (2$), sel=1 for granola bar (4$)
+      coins_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- "00" - 0$, "01" - 1$, "10" - 2$, "11" - 3$
+      change_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0); -- changeout is displayed on two leds - "00" - 0$
+      -- "01" - 1$, "10" - 2$ and "11" - 3$
+      display_sum : OUT STD_LOGIC_VECTOR(6 DOWNTO 0); -- display the current sum of inserted money on the seven segment
+      select_segment : OUT STD_LOGIC; -- select the left or right segment
+      soft_drink : OUT STD_LOGIC; -- turn on the LED to dispense soft drink
+      granola_bar : OUT STD_LOGIC); -- turn on the LED to dispense granola bar
+  END COMPONENT;
 
-signal clk_design       : std_logic;
-signal rst              : std_logic;
-signal item_select      : std_logic;
-signal coins            : std_logic_vector(1 downto 0) ; 
-signal change           : std_logic_vector(1 downto 0);
-signal display          : std_logic_vector(6 downto 0);
-signal segment          : std_logic;
-signal soft_drink_dispense    : std_logic;
-signal granola_bar_dispense   : std_logic;
-signal dispensed        : std_logic_vector(1 downto 0);
+  SIGNAL clk_design : STD_LOGIC;
+  SIGNAL rst : STD_LOGIC;
+  SIGNAL item_select : STD_LOGIC;
+  SIGNAL coins : STD_LOGIC_VECTOR(1 DOWNTO 0);
+  SIGNAL change : STD_LOGIC_VECTOR(1 DOWNTO 0);
+  SIGNAL display : STD_LOGIC_VECTOR(6 DOWNTO 0);
+  SIGNAL segment : STD_LOGIC;
+  SIGNAL soft_drink_dispense : STD_LOGIC;
+  SIGNAL granola_bar_dispense : STD_LOGIC;
+  SIGNAL dispensed : STD_LOGIC_VECTOR(1 DOWNTO 0);
 
-constant clk_period : time := 40 ns;
+  CONSTANT clk_period : TIME := 40 ns;
 
-begin
-    --*** add the design lines to port map the entity here
-    VENDING_ENT : vending_m port map (clk => clk_design,
-                                    reset => rst,
-                                    item_sel => item_select,
-                                    coins_in => coins,
-                                    change_out => change,
-                                    display_sum => display,
-                                    select_segment => segment,
-                                    soft_drink => soft_drink_dispense,
-                                    granola_bar => granola_bar_dispense);
-    --*** end design lines     
---   dispensed <= "10";    
-                    
-   clk_process :process
-   begin
-        clk_design <= '0';
-        wait for clk_period/2;  
-        clk_design <= '1';
-        wait for clk_period/2;  
-   end process;                                   
+BEGIN
+  --*** add the design lines to port map the entity here
+  VENDING_ENT : vending_m PORT MAP(
+    clk => clk_design,
+    reset => rst,
+    item_sel => item_select,
+    coins_in => coins,
+    change_out => change,
+    display_sum => display,
+    select_segment => segment,
+    soft_drink => soft_drink_dispense,
+    granola_bar => granola_bar_dispense);
+  --*** end design lines     
+  --   dispensed <= "10";    
 
-    stim_proc: PROCESS 
-    begin 
-    
+  clk_process : PROCESS
+  BEGIN
+    clk_design <= '0';
+    WAIT FOR clk_period/2;
+    clk_design <= '1';
+    WAIT FOR clk_period/2;
+  END PROCESS;
+
+  stim_proc : PROCESS
+  BEGIN
+
     rst <= '0';
-   
+
     -- ****Test cases****
     -- Write the series of test cases here to verify the correct working of your design.
     -- Provide the input stimulus to the signals : item_select, coins
-        
-    end process;
-end Behavioral;
+
+  END PROCESS;
+END Behavioral;
