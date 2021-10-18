@@ -67,7 +67,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  PROCESS (state_reg) -- complete the sensitivity list
+  PROCESS (seq_in) -- complete the sensitivity list
   BEGIN
     CASE state_reg IS
       WHEN A => -- IDLE
