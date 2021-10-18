@@ -17,63 +17,63 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
+ENTITY seq_fsm_tb IS
+END seq_fsm_tb;
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+ARCHITECTURE Behavioral OF seq_fsm_tb IS
 
-entity seq_fsm_tb is
-end seq_fsm_tb;
+  COMPONENT seq_fsm IS
+    PORT (
+      clk : IN STD_LOGIC;
+      reset : IN STD_LOGIC;
+      seq_in : IN STD_LOGIC;
+      output_detect : OUT STD_LOGIC);
+  END COMPONENT;
 
-architecture Behavioral of seq_fsm_tb is
-    
-component seq_fsm is 
-Port (clk           : in std_logic;
-      reset         : in std_logic;
-      seq_in        : in std_logic;
-      output_detect : out std_logic);
-end component;
+  SIGNAL clk_design : STD_LOGIC;
+  SIGNAL rst : STD_LOGIC;
+  SIGNAL sequence_in : STD_LOGIC;
+  SIGNAL fsm_detector_out : STD_LOGIC;
+  CONSTANT clk_period : TIME := 40 ns;
 
-signal clk_design : std_logic;
-signal rst        : std_logic;
-signal sequence_in      : std_logic;
-signal fsm_detector_out : std_logic;
-constant clk_period : time := 40ns;
+BEGIN
+  --*** add the design lines to port map the entity here
+  FSM_SEQ : seq_fsm PORT MAP(
+    seq_in => sequence_in,
+    reset => rst,
+    output_detect => fsm_detector_out,
+    clk => clk_design);
+  --*** end design lines                               
+  clk_process : PROCESS
+  BEGIN
+    clk_design <= '0';
+    WAIT FOR clk_period/2;
+    clk_design <= '1';
+    WAIT FOR clk_period/2;
+  END PROCESS;
 
-begin
-    --*** add the design lines to port map the entity here
-    FSM_SEQ : seq_fsm port map (seq_in => sequence_in,
-                                reset => rst,
-                                output_detect => fsm_detector_out,
-                                clk => clk_design);
-    --*** end design lines                               
-   clk_process :process
-   begin
-        clk_design <= '0';
-        wait for clk_period/2;  
-        clk_design <= '1';
-        wait for clk_period/2;  
-   end process;                                   
+  stim_proc : PROCESS
+  BEGIN
 
-    stim_proc: PROCESS 
-    begin
-    
     -- test sequence : "0110110"
     rst <= '0';
     sequence_in <= '0';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '1';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '1';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '0';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '1';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '1';
-    wait for clk_period;
+    WAIT FOR clk_period;
     sequence_in <= '0';
-    wait for clk_period;
-        
-    end process;
-end Behavioral;
+    WAIT FOR clk_period;
+
+  END PROCESS;
+END Behavioral;

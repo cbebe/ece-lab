@@ -19,62 +19,104 @@
 ---- ADD THE CODE IN THE COMMENTED SECTION. THERE ARE TWO INTENTIONAL MISTAKES TOO IN THIS CODE TEMPLATE! 
 ---- CORRECT THE MISTAKES TO ENSURE CORRECT WORKING OF FSM.
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
-entity seq_fsm is
-Port (clk           : in std_logic;
-      reset         : in std_logic;
-      seq_in        : in std_logic;
-      output_detect : out std_logic);
-end seq_fsm;
+ENTITY seq_fsm IS
+  PORT (
+    clk : IN STD_LOGIC;
+    reset : IN STD_LOGIC;
+    seq_in : IN STD_LOGIC;
+    output_detect : OUT STD_LOGIC);
+END seq_fsm;
 
-architecture Behavioral of seq_fsm is
+ARCHITECTURE Behavioral OF seq_fsm IS
 
-signal clk_o : std_logic;
+  SIGNAL clk_o : STD_LOGIC;
 
-type states is (A,B,C,D,E);
-signal state_reg, state_next: states;
+  TYPE states IS (A, B, C, D, E);
+  SIGNAL state_reg, state_next : states;
 
----------------------------------------------
--- Add the clk_divider component here
--- Remember, you want to add this component here and then use it later when you wish to have the divided clock by a factor of 62500000
+  ---------------------------------------------
+  -- Add the clk_divider component here
+  -- Remember, you want to add this component here and then use it later when you wish to have the divided clock by a factor of 62500000
+  COMPONENT clk_divider IS
+    PORT (
+      clk_in : IN STD_LOGIC;
+      clk_out : OUT STD_LOGIC);
+  END COMPONENT;
 
----------------------------------------------
-  
-begin
----------------------------------------------
--- port map the clk_divider here
+  ---------------------------------------------
 
----------------------------------------------
-    
-    -- the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
-    -- you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
-    -- same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
-    process(clk)
-        begin
-           if(reset='1')then
-                state_reg <= B;
-           elsif(rising_edge(clk))then
-                state_reg <= state_next;
-           end if; 
-    end process;
-    
-    process(state_reg) -- complete the sensitivity list
-        begin
-        case state_reg is
-            when A =>                    
-                    if seq_in = '0' then
-                        state_next <= A;
-                        output_detect <= '0';
-                    else
-                        state_next <= B;
-                        output_detect <= '0';
-                    end if;
-                    
-            --- Add the remaining cases for other states here!
-                                                                 
-        end case;
-    end process;
-    
-end Behavioral;
+BEGIN
+  ---------------------------------------------
+  -- port map the clk_divider here
+  CLK_DIV : clk_divider PORT MAP(clk_in => clk, clk_out => clk_o);
+
+  ---------------------------------------------
+
+  -- the process below uses the 'clk' i.e. the undivided clock , i.e. the clock signal from the entity.
+  -- you can replace it with the divided clock signal later on when you add the 'clk_divider' component.
+  -- same way, you will need to change the clock signal in the 'elsif' statement inside the process below, later on!
+  PROCESS (clk)
+  BEGIN
+    IF (reset = '1') THEN
+      state_reg <= B;
+    ELSIF (rising_edge(clk)) THEN
+      state_reg <= state_next;
+    END IF;
+  END PROCESS;
+
+  PROCESS (state_reg) -- complete the sensitivity list
+  BEGIN
+    CASE state_reg IS
+      WHEN A => -- IDLE
+        IF seq_in = '0' THEN
+          state_next <= A;
+          output_detect <= '0';
+        ELSE
+          state_next <= B;
+          output_detect <= '0';
+        END IF;
+
+        --- Add the remaining cases for other states here!
+      WHEN B => -- S1
+        IF seq_in = '0' THEN
+          state_next <= A;
+          output_detect <= '0';
+        ELSE
+          state_next <= C;
+          output_detect <= '0';
+        END IF;
+
+      WHEN C => -- S11
+        IF seq_in = '0' THEN
+          state_next <= D;
+          output_detect <= '0';
+        ELSE
+          state_next <= C;
+          output_detect <= '0';
+        END IF;
+
+      WHEN D => -- S110
+        IF seq_in = '0' THEN
+          state_next <= A;
+          output_detect <= '0';
+        ELSE
+          state_next <= E;
+          output_detect <= '0';
+        END IF;
+
+      WHEN E => -- S1101
+        IF seq_in = '0' THEN
+          state_next <= A;
+          output_detect <= '0';
+        ELSE
+          state_next <= B;
+          output_detect <= '1';
+        END IF;
+
+    END CASE;
+  END PROCESS;
+
+END Behavioral;
