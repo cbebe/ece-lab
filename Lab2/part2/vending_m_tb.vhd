@@ -127,7 +127,7 @@ BEGIN
     coins <= "00";
     WAIT FOR clk_period;
     
-    -- buying a granola bar - $6 change
+    -- buying a granola bar - $2 change
     item_select <= '1';
     WAIT FOR clk_period;
     coins <= "11";
