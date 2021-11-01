@@ -65,6 +65,7 @@ ARCHITECTURE struct OF datapath IS
   COMPONENT alu PORT (
     clk_alu : IN STD_LOGIC;
     sel_alu : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    bit_alu : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
     inA_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     inB_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     OUT_alu : OUT STD_LOGIC_VECTOR (7 DOWNTO 0));

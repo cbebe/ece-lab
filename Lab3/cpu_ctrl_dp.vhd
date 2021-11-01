@@ -46,6 +46,7 @@ ARCHITECTURE structure OF cpu_ctrl_dp IS
     rfaddr_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
     rfwr_ctrl : OUT STD_LOGIC;
     alusel_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
+    alubit_ctrl : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
     outen_ctrl : OUT STD_LOGIC;
     zero_ctrl : IN STD_LOGIC;
     positive_ctrl : IN STD_LOGIC;
@@ -64,6 +65,7 @@ ARCHITECTURE structure OF cpu_ctrl_dp IS
     rfaddr_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
     rfwr_dp : IN STD_LOGIC;
     alusel_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    alubit_dp : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
     outen_dp : IN STD_LOGIC;
     zero_dp : OUT STD_LOGIC;
     positive_dp : OUT STD_LOGIC;
