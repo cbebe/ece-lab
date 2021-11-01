@@ -85,9 +85,12 @@ BEGIN
     --*********************************
     -- provide the required input stimulus here for the design under test
     rst_tb <= '1';
+    enter <='1';
+    in_tb <="00000000";
     WAIT FOR clk_period;
+    rst_tb <='0';
     -----------------------------------
-
+    WAIT;
   END PROCESS;
 
 END behavior;
