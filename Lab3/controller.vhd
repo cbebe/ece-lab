@@ -68,6 +68,37 @@ ARCHITECTURE Behavior OF controller IS
 
   TYPE PM_BLOCK IS ARRAY(0 TO 31) OF STD_LOGIC_VECTOR(7 DOWNTO 0); -- program memory that will store the instructions sequentially from part 1 and part 2 test program
 
+  FUNCTION part_1 RETURN PM_BLOCK IS
+    VARIABLE PM : PM_BLOCK;
+  BEGIN
+    PM(0) := "10000000";
+    PM(1) := "10000001";
+    PM(2) := "11000000";
+    PM(3) := "00000100";
+    PM(4) := "01100000";
+    PM(5) := "10010000";
+    PM(6) := "00110000";
+    PM(7) := "00001010";
+    PM(8) := "01110000";
+    PM(9) := "10010000";
+    PM(10) := "10100000";
+    RETURN PM;
+  END FUNCTION part_1;
+
+  FUNCTION part_2 RETURN PM_BLOCK IS
+    VARIABLE PM : PM_BLOCK;
+  BEGIN
+    PM(0) := "10000000";
+    PM(1) := "10000001";
+    PM(2) := "00100000";
+    PM(3) := "00110000";
+    PM(4) := "00001111";
+    PM(5) := "00100000";
+    PM(6) := "10010000";
+    PM(10) := "10100000";
+    RETURN PM;
+  END FUNCTION part_2;
+
 BEGIN
   PROCESS (clk_ctrl) -- complete the sensitivity list
 
@@ -98,6 +129,7 @@ BEGIN
       -- *************** assembly code for PART1/PART2 goes here
       --                PM(0) := "XXXXXXXX"; -- for example this is how the instructions will be stored in the program memory
       -- **************
+      PM := part_1;
 
     ELSIF (clk_ctrl'event AND clk_ctrl = '1') THEN
       CASE state IS
@@ -201,7 +233,8 @@ BEGIN
           -- *********************************
           -- write the entire state for LDI_execute
           muxsel_ctrl <= "11";
-          imm_ctrl <= IR;
+          PC := PC + 1;
+          imm_ctrl <= PM(PC);
           accwr_ctrl <= '1'; -- write to accumulator
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '0';
@@ -212,19 +245,63 @@ BEGIN
         WHEN JZ_execute => -- JZ
           -- *********************************
           -- write the entire state for JZ_execute
+          muxsel_ctrl <= "11";
+          imm_ctrl <= PM(PC + 1);
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= "000";
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "100";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= Fetch;
         WHEN ADD_execute => -- ADD 
           -- *********************************
           -- write the entire state for ADD_execute
-
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "100";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= ADD_SUB_SL_SR_next;
         WHEN SUB_execute => -- SUB 
           -- *********************************
           -- write the entire state for SUB_execute
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "101";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= ADD_SUB_SL_SR_next;
         WHEN SHFL_execute => -- SHFL
           -- *********************************
           -- write the entire state for SHFL_execute
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "101";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= ADD_SUB_SL_SR_next;
         WHEN SHFR_execute => -- SHFR 
           -- *********************************
           -- write the entire state for SHFR_execute
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "110";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= ADD_SUB_SL_SR_next;
         WHEN input_A => -- INA
           muxsel_ctrl <= "10";
           imm_ctrl <= (OTHERS => '0');

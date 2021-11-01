@@ -86,7 +86,8 @@ BEGIN
 
     -- *****************************
     -- map the remaining signals here
-
+    rfaddr_ctrl => C_rfaddr,
+    rfwr_ctrl => C_rfwr,
     alusel_ctrl => C_alusel,
     outen_ctrl => C_outen,
     zero_ctrl => C_zero,
@@ -108,6 +109,7 @@ BEGIN
     outen_dp => C_outen,
     -- *****************************
     -- map the remaining signals here
-
+    zero_dp => C_zero,
+    positive_dp => C_positive,
     output_dp => output_cpu);
 END structure;

@@ -46,12 +46,12 @@ BEGIN
       IF (wr_rf = '1') THEN
         -- ********************************************************
         -- write one of line here
-        output_rf <= RF(to_integer(unsigned(addr_rf)));
+        RF(to_integer(unsigned(addr_rf))) <= input_rf;
         -----------------------------------------------------------
       ELSE
         -- ********************************************************
         -- write one of line here
-        RF(to_integer(unsigned(addr_rf))) <= input_rf;
+        output_rf <= RF(to_integer(unsigned(addr_rf)));
         -----------------------------------------------------------
       END IF;
     END IF;
