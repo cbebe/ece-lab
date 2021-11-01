@@ -123,6 +123,7 @@ BEGIN
       rfaddr_ctrl <= "000";
       rfwr_ctrl <= '0';
       alusel_ctrl <= "000";
+      alubit_ctrl <= "00";
       outen_ctrl <= '0';
       done <= '0';
       state <= Fetch;
@@ -150,6 +151,7 @@ BEGIN
             rfaddr_ctrl <= "000";
             rfwr_ctrl <= '0';
             alusel_ctrl <= "000";
+            alubit_ctrl <= "00";
             outen_ctrl <= '0';
             done <= '0';
             state <= Decode;
@@ -180,6 +182,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
 
@@ -190,6 +193,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Fetch;
@@ -203,6 +207,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           state <= Fetch;
 
@@ -215,6 +220,7 @@ BEGIN
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '0'; -- read from register file
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Fetch;
@@ -226,6 +232,7 @@ BEGIN
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '1';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Fetch;
@@ -240,6 +247,7 @@ BEGIN
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Fetch;
@@ -252,6 +260,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "100";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Fetch;
@@ -264,6 +273,7 @@ BEGIN
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '0';
           alusel_ctrl <= "100";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= ADD_SUB_SL_SR_next;
@@ -276,6 +286,7 @@ BEGIN
           rfaddr_ctrl <= IR(2 DOWNTO 0);
           rfwr_ctrl <= '0';
           alusel_ctrl <= "101";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= ADD_SUB_SL_SR_next;
@@ -284,11 +295,11 @@ BEGIN
           -- write the entire state for SHFL_execute
           muxsel_ctrl <= "00";
           imm_ctrl <= (OTHERS => '0');
-          alubit_ctrl <= IR(1 DOWNTO 0);
           accwr_ctrl <= '1';
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "101";
+          alubit_ctrl <= IR(1 DOWNTO 0);
           outen_ctrl <= '0';
           done <= '0';
           state <= ADD_SUB_SL_SR_next;
@@ -297,11 +308,11 @@ BEGIN
           -- write the entire state for SHFR_execute
           muxsel_ctrl <= "00";
           imm_ctrl <= (OTHERS => '0');
-          alubit_ctrl <= IR(1 DOWNTO 0);
           accwr_ctrl <= '1';
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "110";
+          alubit_ctrl <= IR(1 DOWNTO 0);
           outen_ctrl <= '0';
           done <= '0';
           state <= ADD_SUB_SL_SR_next;
@@ -312,6 +323,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= flag_state;
@@ -325,6 +337,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '1';
           done <= '0';
           state <= Fetch;
@@ -335,6 +348,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Halt_cpu;
@@ -346,6 +360,7 @@ BEGIN
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "000";
+          alubit_ctrl <= "00";
           outen_ctrl <= '0';
           done <= '0';
           state <= Halt_cpu;
