@@ -32,6 +32,7 @@ ENTITY datapath IS PORT (
   rfaddr_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0); -- select signal for choosing between the eight register locations
   rfwr_dp : IN STD_LOGIC; -- write control signal asserted to write to register file
   alusel_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0); -- select signal for the eight ALU operations
+  alubit_dp : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- number of bits to shift
   outen_dp : IN STD_LOGIC; -- outer buffer enable signal for the output buffer 
   zero_dp : OUT STD_LOGIC; -- output zero flag signal
   positive_dp : OUT STD_LOGIC; -- output positive flag signal
@@ -110,6 +111,7 @@ BEGIN
   U3 : alu PORT MAP(
     clk_alu => clk_dp,
     sel_alu => alusel_dp,
+    bit_alu => alubit_dp,
     inA_alu => C_accout,
     inB_alu => C_rfout,
     OUT_alu => C_aluout);

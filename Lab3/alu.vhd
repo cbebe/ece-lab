@@ -31,6 +31,7 @@ USE IEEE.NUMERIC_STD.ALL;
 ENTITY alu IS PORT (
   clk_alu : IN STD_LOGIC;
   sel_alu : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+  bit_alu : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- number of bits to shift left/right
   inA_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
   inB_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
   OUT_alu : OUT STD_LOGIC_VECTOR (7 DOWNTO 0) := "00000000");
@@ -51,12 +52,14 @@ BEGIN
           --                                shift left with 0
           -- ***************************************
           -- write one line of code here to perform shift left
-          OUT_alu <= STD_LOGIC_VECTOR(shift_left(unsigned(inA_alu), 1));
+          OUT_alu <= STD_LOGIC_VECTOR(shift_left(unsigned(inA_alu),
+            to_integer(unsigned(bit_alu))));
         WHEN "011" =>
           --                                shift right with 0
           -- ***************************************
           -- write one line of code here to perform shift right
-          OUT_alu <= STD_LOGIC_VECTOR(shift_right(unsigned(inA_alu), 1));
+          OUT_alu <= STD_LOGIC_VECTOR(shift_right(unsigned(inA_alu),
+            to_integer(unsigned(bit_alu))));
         WHEN "100" =>
           OUT_alu <= inA_alu + inB_alu;
         WHEN "101" =>

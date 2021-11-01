@@ -72,9 +72,8 @@ ARCHITECTURE structure OF cpu_ctrl_dp IS
 
   SIGNAL C_immediate : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL C_accwr, C_rfwr, C_outen, C_zero, C_positive : STD_LOGIC;
-  SIGNAL C_muxsel : STD_LOGIC_VECTOR(1 DOWNTO 0);
+  SIGNAL C_muxsel, C_alubit : STD_LOGIC_VECTOR(1 DOWNTO 0);
   SIGNAL C_rfaddr, C_alusel : STD_LOGIC_VECTOR(2 DOWNTO 0);
-
 BEGIN
   U0 : controller PORT MAP(
     clk_ctrl => clk_cpu,
@@ -89,6 +88,7 @@ BEGIN
     rfaddr_ctrl => C_rfaddr,
     rfwr_ctrl => C_rfwr,
     alusel_ctrl => C_alusel,
+    alubit_ctrl => C_alubit,
     outen_ctrl => C_outen,
     zero_ctrl => C_zero,
     positive_ctrl => C_positive,
@@ -106,6 +106,7 @@ BEGIN
     rfaddr_dp => C_rfaddr,
     rfwr_dp => C_rfwr,
     alusel_dp => C_alusel,
+    alubit_dp => C_alubit,
     outen_dp => C_outen,
     -- *****************************
     -- map the remaining signals here

@@ -33,6 +33,7 @@ ENTITY controller IS PORT (
   accwr_ctrl : OUT STD_LOGIC;
   rfaddr_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
   rfwr_ctrl : OUT STD_LOGIC;
+  alubit_ctrl : OUT STD_LOGIC_VECTOR(1 DOWNTO 0); -- number of bits to shift
   alusel_ctrl : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
   outen_ctrl : OUT STD_LOGIC;
   zero_ctrl : IN STD_LOGIC;
@@ -283,8 +284,9 @@ BEGIN
           -- write the entire state for SHFL_execute
           muxsel_ctrl <= "00";
           imm_ctrl <= (OTHERS => '0');
+          alubit_ctrl <= IR(1 DOWNTO 0);
           accwr_ctrl <= '1';
-          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "101";
           outen_ctrl <= '0';
@@ -295,8 +297,9 @@ BEGIN
           -- write the entire state for SHFR_execute
           muxsel_ctrl <= "00";
           imm_ctrl <= (OTHERS => '0');
+          alubit_ctrl <= IR(1 DOWNTO 0);
           accwr_ctrl <= '1';
-          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
           alusel_ctrl <= "110";
           outen_ctrl <= '0';
