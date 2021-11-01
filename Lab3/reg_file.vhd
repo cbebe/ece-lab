@@ -21,9 +21,10 @@
 -- A given instruction will perform either read or write any given time and not both
 -- at the same time.
 -----------------------------
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY reg_file IS PORT (
   clk_rf : IN STD_LOGIC;
@@ -45,12 +46,12 @@ BEGIN
       IF (wr_rf = '1') THEN
         -- ********************************************************
         -- write one of line here
-
+        output_rf <= RF(to_integer(unsigned(addr_rf)));
         -----------------------------------------------------------
       ELSE
         -- ********************************************************
         -- write one of line here
-
+        RF(to_integer(unsigned(addr_rf))) <= input_rf;
         -----------------------------------------------------------
       END IF;
     END IF;

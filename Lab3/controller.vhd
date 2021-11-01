@@ -107,7 +107,7 @@ BEGIN
             IR := PM(PC);
             -- ****************************************
             -- write one line of code to get the opcode from the IR
-
+            OPCODE := IR(7 DOWNTO 0);
             -------------------------------------------
             OP_out <= OPCODE;
             PC := PC + 1;

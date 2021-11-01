@@ -87,7 +87,7 @@ BEGIN
     in2_mux => input_dp,
     -- ****************************************
     -- map the remaining signals here for this component
-    in1_mux => C_alouout,
+    in1_mux => C_aluout,
     in0_mux => C_rfout,
     out_mux => C_muxout);
 
