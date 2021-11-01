@@ -107,7 +107,7 @@ BEGIN
             IR := PM(PC);
             -- ****************************************
             -- write one line of code to get the opcode from the IR
-            OPCODE := IR(7 DOWNTO 0);
+            OPCODE := IR(7 DOWNTO 4);
             -------------------------------------------
             OP_out <= OPCODE;
             PC := PC + 1;
@@ -176,6 +176,15 @@ BEGIN
         WHEN LDA_execute => -- LDA 
           -- *********************************
           -- write the entire state for LDA_execute
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1'; -- write to accumulator
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0'; -- read from register file
+          alusel_ctrl <= "000";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= Fetch;
 
         WHEN STA_execute => -- STA 
           muxsel_ctrl <= "00";
@@ -191,6 +200,15 @@ BEGIN
         WHEN LDI_execute => -- LDI 
           -- *********************************
           -- write the entire state for LDI_execute
+          muxsel_ctrl <= "11";
+          imm_ctrl <= IR;
+          accwr_ctrl <= '1'; -- write to accumulator
+          rfaddr_ctrl <= IR(2 DOWNTO 0);
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "000";
+          outen_ctrl <= '0';
+          done <= '0';
+          state <= Fetch;
         WHEN JZ_execute => -- JZ
           -- *********************************
           -- write the entire state for JZ_execute

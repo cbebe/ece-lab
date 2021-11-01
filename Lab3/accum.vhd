@@ -52,7 +52,7 @@ BEGIN
     ELSIF (clk_acc'event) AND (clk_acc = '1') AND (wr_acc = '1') THEN
       -- **************************************************************
       -- write one line of code here
-
+      output_acc <= input_acc;
       -----------------------------------------------------------------
     END IF;
   END PROCESS;

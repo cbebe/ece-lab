@@ -21,12 +21,12 @@
 -- In future, this alu is scalable to say, 16 operations using 4 select lines.
 -----------------------------
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 -- The following package is needed so that the STD_LOGIC_VECTOR signals
 -- A and B can be used in unsigned arithmetic operations.
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE ieee.std_logic_unsigned.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY alu IS PORT (
   clk_alu : IN STD_LOGIC;
@@ -51,12 +51,14 @@ BEGIN
           --                                shift left with 0
           -- ***************************************
           -- write one line of code here to perform shift left
-
+          OUT_alu <= STD_LOGIC_VECTOR(
+            shift_left(unsigned(inA_alu), to_integer(unsigned(inB_alu))));
         WHEN "011" =>
           --                                shift right with 0
           -- ***************************************
           -- write one line of code here to perform shift right
-
+          OUT_alu <= STD_LOGIC_VECTOR(
+            shift_right(unsigned(inA_alu), to_integer(unsigned(inB_alu))));
         WHEN "100" =>
           OUT_alu <= inA_alu + inB_alu;
         WHEN "101" =>
