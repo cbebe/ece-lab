@@ -26,7 +26,7 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 ENTITY sev_segment IS
   PORT (
     --output of PC from cpu
-    DispVal : IN STD_LOGIC_VECTOR (4downto 0);
+    DispVal : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
     anode : OUT STD_LOGIC;
     --controls which digit to display
     segOut : OUT STD_LOGIC_VECTOR (6 DOWNTO 0));
@@ -48,7 +48,12 @@ BEGIN
     "0000111" WHEN "00111", --7
     "1111111" WHEN "01000", --8
     "1101111" WHEN "01001", --9
-
+    "1110111" WHEN "01010", --A (10)
+    "1111100" WHEN "01011", --B (11)
+    "0111001" WHEN "01100", --C (12)
+    "1011110" WHEN "01101", --D (13)
+    "1111001" WHEN "01110", --E (14)
+    "1110001" WHEN "01111", --F (15)
     -- ***************************************
     -- write the remaining lines to display from A to F, when "others" is provided to you...
 
