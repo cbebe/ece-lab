@@ -87,6 +87,8 @@ BEGIN
     in2_mux => input_dp,
     -- ****************************************
     -- map the remaining signals here for this component
+    in1_mux => C_alouout,
+    in0_mux => C_rfout,
     out_mux => C_muxout);
 
   U1 : accum PORT MAP(
@@ -100,6 +102,8 @@ BEGIN
     clk_rf => clk_dp,
     -- ****************************************
     -- map the remaining signals here for this component
+    wr_rf => rfwr_dp,
+    addr_rf => rfaddr_dp,
     input_rf => C_accout,
     output_rf => C_rfout);
 
@@ -120,5 +124,7 @@ BEGIN
   -- ***********************************************************
   -- write two lines for zero flag and positive flag here
   --------------------------------------------------------------
+  zero_dp <= NOR(C_muxout); -- output zero flag signal
+  positive_dp <= C_muxout(C_muxout'high); -- check MSB
 
 END struct;
