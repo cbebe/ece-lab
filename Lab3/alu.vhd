@@ -52,13 +52,13 @@ BEGIN
           -- ***************************************
           -- write one line of code here to perform shift left
           OUT_alu <= STD_LOGIC_VECTOR(
-            shift_left(unsigned(inA_alu), to_integer(unsigned(inB_alu))));
+            shift_left(unsigned(inA_alu), 1);
         WHEN "011" =>
           --                                shift right with 0
           -- ***************************************
           -- write one line of code here to perform shift right
           OUT_alu <= STD_LOGIC_VECTOR(
-            shift_right(unsigned(inA_alu), to_integer(unsigned(inB_alu))));
+            shift_right(unsigned(inA_alu), 1);
         WHEN "100" =>
           OUT_alu <= inA_alu + inB_alu;
         WHEN "101" =>
