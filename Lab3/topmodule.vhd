@@ -36,7 +36,7 @@ ENTITY topmodule IS
     clk : IN STD_LOGIC;
     rst_button : IN STD_LOGIC;
     entered_input : IN STD_LOGIC;
-    input_sw : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    input_sw : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
     OPcode_LED : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
     PC_on_7_seg : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
     select_segment : OUT STD_LOGIC;
@@ -73,8 +73,7 @@ ARCHITECTURE Behavioral OF topmodule IS
   SIGNAL PC : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
 BEGIN
-
-  in_modified <= "00000" & input_sw;
+  in_modified <= input_sw & input_sw;
 
   clk_div : clk_divider PORT MAP(
     clk_in => clk,
