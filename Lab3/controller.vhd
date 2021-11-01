@@ -71,31 +71,31 @@ ARCHITECTURE Behavior OF controller IS
   FUNCTION part_1 RETURN PM_BLOCK IS
     VARIABLE PM : PM_BLOCK;
   BEGIN
-    PM(0) := "10000000";
-    PM(1) := "10000001";
-    PM(2) := "11000000";
+    PM(0) := INA & "0000";
+    PM(1) := INA & "0001";
+    PM(2) := JZ & "0000";
     PM(3) := "00000100";
-    PM(4) := "01100000";
-    PM(5) := "10010000";
-    PM(6) := "00110000";
+    PM(4) := SHFL & "0000";
+    PM(5) := OUTA & "0000";
+    PM(6) := LDI & "0000";
     PM(7) := "00001010";
-    PM(8) := "01110000";
-    PM(9) := "10010000";
-    PM(10) := "10100000";
+    PM(8) := SHFR & "0000";
+    PM(9) := OUTA & "0000";
+    PM(10) := HALT & "0000";
     RETURN PM;
   END FUNCTION part_1;
 
   FUNCTION part_2 RETURN PM_BLOCK IS
     VARIABLE PM : PM_BLOCK;
   BEGIN
-    PM(0) := "10000000";
-    PM(1) := "10000001";
-    PM(2) := "00100000";
-    PM(3) := "00110000";
+    PM(0) := INA & "0000";
+    PM(1) := INA & "0001";
+    PM(2) := STA & "0" & "000";
+    PM(3) := LDI & "0000";
     PM(4) := "00001111";
-    PM(5) := "00100000";
-    PM(6) := "10010000";
-    PM(10) := "10100000";
+    PM(5) := ADD & "0" & "000";
+    PM(6) := OUTA & "0000";
+    PM(10) := HALT & "0000";
     RETURN PM;
   END FUNCTION part_2;
 
