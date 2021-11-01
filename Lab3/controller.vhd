@@ -125,6 +125,8 @@ BEGIN
       alusel_ctrl <= "000";
       alubit_ctrl <= "00";
       outen_ctrl <= '0';
+      PC_out <= "00000";
+      OP_out <= "0000";
       done <= '0';
       state <= Fetch;
 
