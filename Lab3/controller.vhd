@@ -316,6 +316,15 @@ BEGIN
         WHEN output_A => -- OUTA
           -- *********************************
           -- write the entire state for output_A
+          muxsel_ctrl <= "00";
+          imm_ctrl <= (OTHERS => '0');
+          accwr_ctrl <= '1';
+          rfaddr_ctrl <= "000";
+          rfwr_ctrl <= '0';
+          alusel_ctrl <= "000";
+          outen_ctrl <= '1';
+          done <= '0';
+          state <= Fetch;
         WHEN Halt_cpu => -- HALT
           muxsel_ctrl <= "00";
           imm_ctrl <= (OTHERS => '0');
