@@ -40,11 +40,12 @@ END tristatebuffer;
 
 ARCHITECTURE Behavioral OF TriStateBuffer IS
 BEGIN
-  PROCESS (---) -- complete the sensitivity list 
+  PROCESS (E) -- complete the sensitivity list 
   BEGIN
     IF (E = '1') THEN
       -- ****************************************
       -- write one line of code here
+      Y <= D;
     ELSE
       Y <= (OTHERS => 'Z');
     END IF;
