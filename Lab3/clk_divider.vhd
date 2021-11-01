@@ -18,9 +18,9 @@
 -- 
 ----------------------------------------------------------------------------------
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL; 
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -31,25 +31,25 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity clk_divider is
-    Port ( clk_in : in STD_LOGIC;
-           clk_out : out STD_LOGIC);
-end clk_divider;
+ENTITY clk_divider IS
+  PORT (
+    clk_in : IN STD_LOGIC;
+    clk_out : OUT STD_LOGIC);
+END clk_divider;
 
-architecture Behavioral of clk_divider is
-signal clock_out : std_logic := '0';
-signal count : integer := 1;
-begin
-    process(clk_in)
-    begin
-        if clk_in='1' and clk_in'event then
-            count <= count + 1;
-            if(count = 62500000) then
-                clock_out <= NOT clock_out;
-                count <= 1;
-            end if;
-        end if;            
+ARCHITECTURE Behavioral OF clk_divider IS
+  SIGNAL clock_out : STD_LOGIC := '0';
+  SIGNAL count : INTEGER := 1;
+BEGIN
+  PROCESS (clk_in)
+  BEGIN
+    IF clk_in = '1' AND clk_in'event THEN
+      count <= count + 1;
+      IF (count = 62500000) THEN
+        clock_out <= NOT clock_out;
+        count <= 1;
+      END IF;
+    END IF;
     clk_out <= clock_out;
-    end process;
-end Behavioral;
-
+  END PROCESS;
+END Behavioral;

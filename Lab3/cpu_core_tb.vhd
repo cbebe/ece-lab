@@ -17,10 +17,8 @@
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
-
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -33,64 +31,62 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 ENTITY cpu_core_tb IS
 END cpu_core_tb;
- 
-ARCHITECTURE behavior OF cpu_core_tb IS 
- 
-    -- Component Declaration for the Unit Under Test (UUT)
- 
-  COMPONENT cpu_ctrl_dp PORT(
-                    clk_cpu     : in std_logic;
-                    rst_cpu     : IN std_logic;
-                    entered_ip  : IN std_logic;
-                    input_cpu   : IN std_logic_vector(7 DOWNTO 0);
-                    output_cpu  : OUT std_logic_vector(7 DOWNTO 0);
-                    PC_output   : OUT std_logic_vector(4 downto 0);
-                    OPCODE_ouput: OUT std_logic_vector(3 downto 0);
-                    done_cpu    : OUT std_logic);
+
+ARCHITECTURE behavior OF cpu_core_tb IS
+
+  -- Component Declaration for the Unit Under Test (UUT)
+
+  COMPONENT cpu_ctrl_dp PORT (
+    clk_cpu : IN STD_LOGIC;
+    rst_cpu : IN STD_LOGIC;
+    entered_ip : IN STD_LOGIC;
+    input_cpu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    output_cpu : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    PC_output : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+    OPCODE_ouput : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    done_cpu : OUT STD_LOGIC);
   END COMPONENT;
 
-  signal clk_tb : std_logic := '0';
-  signal rst_tb : std_logic := '0';
-  signal in_tb : std_logic_vector(7 downto 0);
-  signal opcode_tb   : std_logic_vector(3 downto 0);
-  signal pc_tb       : std_logic_vector(4 downto 0);
-  signal output_tb   : std_logic_vector(7 downto 0);
-  signal enter       : std_logic;
-  signal done        : std_logic;
-   
-   -- Clock period definitions
-   constant clk_period : time := 8 ns;
-  
-begin
-    -- Instantiate the Unit Under Test (UUT)
-   uut: cpu_ctrl_dp PORT MAP (
-                              clk_cpu       => clk_tb,
-                              rst_cpu       => rst_tb,
-                              entered_ip    => enter,
-                              input_cpu     => in_tb,
-                              output_cpu    => output_tb,
-                              PC_output     => pc_tb,
-                              OPCODE_ouput  => opcode_tb,
-                              done_cpu      => done);
-   -- Clock process definitions
-   clk_process :process
-   begin
-		clk_tb <= '0';
-		wait for clk_period/2;
-		clk_tb <= '1';
-		wait for clk_period/2;
-   end process;
- 
+  SIGNAL clk_tb : STD_LOGIC := '0';
+  SIGNAL rst_tb : STD_LOGIC := '0';
+  SIGNAL in_tb : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL opcode_tb : STD_LOGIC_VECTOR(3 DOWNTO 0);
+  SIGNAL pc_tb : STD_LOGIC_VECTOR(4 DOWNTO 0);
+  SIGNAL output_tb : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL enter : STD_LOGIC;
+  SIGNAL done : STD_LOGIC;
 
-   -- Stimulus process
-   stim_proc: process
-   begin		
-      
-	--*********************************
-	-- provide the required input stimulus here for the design under test
+  -- Clock period definitions
+  CONSTANT clk_period : TIME := 8 ns;
 
-	-----------------------------------
+BEGIN
+  -- Instantiate the Unit Under Test (UUT)
+  uut : cpu_ctrl_dp PORT MAP(
+    clk_cpu => clk_tb,
+    rst_cpu => rst_tb,
+    entered_ip => enter,
+    input_cpu => in_tb,
+    output_cpu => output_tb,
+    PC_output => pc_tb,
+    OPCODE_ouput => opcode_tb,
+    done_cpu => done);
+  -- Clock process definitions
+  clk_process : PROCESS
+  BEGIN
+    clk_tb <= '0';
+    WAIT FOR clk_period/2;
+    clk_tb <= '1';
+    WAIT FOR clk_period/2;
+  END PROCESS;
+  -- Stimulus process
+  stim_proc : PROCESS
+  BEGIN
 
-   end process;
+    --*********************************
+    -- provide the required input stimulus here for the design under test
 
-end behavior;
+    -----------------------------------
+
+  END PROCESS;
+
+END behavior;

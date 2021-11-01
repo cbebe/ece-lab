@@ -19,10 +19,10 @@
 -- 8-bit accumulator register as shown in the datapath of lab manual
 -----------------------------
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -32,29 +32,29 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity accum is PORT (
-            clk_acc         : IN std_logic;
-            rst_acc         : IN std_logic; -- clear signal to reset the accumulator
-            wr_acc          : IN std_logic; -- this signal goes high whenever you want to write into the accumulator register
-            input_acc       : IN std_logic_vector (7 DOWNTO 0);
-            output_acc      : OUT std_logic_vector (7 DOWNTO 0));
+ENTITY accum IS PORT (
+  clk_acc : IN STD_LOGIC;
+  rst_acc : IN STD_LOGIC; -- clear signal to reset the accumulator
+  wr_acc : IN STD_LOGIC; -- this signal goes high whenever you want to write into the accumulator register
+  input_acc : IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+  output_acc : OUT STD_LOGIC_VECTOR (7 DOWNTO 0));
 
-end accum;
+END accum;
 
-architecture Behavioral of accum is
+ARCHITECTURE Behavioral OF accum IS
 
 BEGIN
-    PROCESS(clk_acc, rst_acc)
+  PROCESS (clk_acc, rst_acc)
 
-	begin
-		if rst_acc = '1' then
-			output_acc <= (others => '0');
-		elsif (clk_acc'event) and (clk_acc = '1') and (wr_acc = '1') then
-		-- **************************************************************
-		-- write one line of code here
+  BEGIN
+    IF rst_acc = '1' THEN
+      output_acc <= (OTHERS => '0');
+    ELSIF (clk_acc'event) AND (clk_acc = '1') AND (wr_acc = '1') THEN
+      -- **************************************************************
+      -- write one line of code here
 
-		-----------------------------------------------------------------
-		end if;
-	end process;
+      -----------------------------------------------------------------
+    END IF;
+  END PROCESS;
 
-end Behavioral;
+END Behavioral;

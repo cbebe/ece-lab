@@ -19,8 +19,8 @@
 -- This is the top module file for the cpu, clk_divider and the seven segment
 -----------------------------
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -31,67 +31,67 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity topmodule is
-  Port ( clk        : in std_logic;
-         rst_button : in std_logic;
-         entered_input     : in std_logic;
-         input_sw          : in std_logic_vector(2 downto 0);
-         OPcode_LED      : out std_logic_vector(3 downto 0);
-         PC_on_7_seg     : out std_logic_vector(6 downto 0);
-         select_segment  : out std_logic;
-         done_signal     : out std_logic  );
-end topmodule;
+ENTITY topmodule IS
+  PORT (
+    clk : IN STD_LOGIC;
+    rst_button : IN STD_LOGIC;
+    entered_input : IN STD_LOGIC;
+    input_sw : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
+    OPcode_LED : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    PC_on_7_seg : OUT STD_LOGIC_VECTOR(6 DOWNTO 0);
+    select_segment : OUT STD_LOGIC;
+    done_signal : OUT STD_LOGIC);
+END topmodule;
 
-architecture Behavioral of topmodule is
+ARCHITECTURE Behavioral OF topmodule IS
 
-component cpu_ctrl_dp port (
-        clk_cpu     : in std_logic;
-        rst_cpu     : IN std_logic;
-        entered_ip  : IN std_logic;
-        input_cpu   : IN std_logic_vector(7 DOWNTO 0);
-        output_cpu  : OUT std_logic_vector(7 DOWNTO 0);
-        PC_output   : OUT std_logic_vector(4 downto 0);
-        OPCODE_ouput: OUT std_logic_vector(3 downto 0);
-        done_cpu    : OUT std_logic);
-end component;
+  COMPONENT cpu_ctrl_dp PORT (
+    clk_cpu : IN STD_LOGIC;
+    rst_cpu : IN STD_LOGIC;
+    entered_ip : IN STD_LOGIC;
+    input_cpu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    output_cpu : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    PC_output : OUT STD_LOGIC_VECTOR(4 DOWNTO 0);
+    OPCODE_ouput : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    done_cpu : OUT STD_LOGIC);
+  END COMPONENT;
 
-component sev_segment Port ( 
-        --output of PC from cpu
-        DispVal : in  STD_LOGIC_VECTOR (4 downto 0);
-        anode: out std_logic;
-        --controls which digit to display
-        segOut : out  STD_LOGIC_VECTOR (6 downto 0));
-end component;
- 
-component clk_divider Port ( clk_in : in STD_LOGIC;
-                             clk_out : out STD_LOGIC);
-end component;
+  COMPONENT sev_segment PORT (
+    --output of PC from cpu
+    DispVal : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+    anode : OUT STD_LOGIC;
+    --controls which digit to display
+    segOut : OUT STD_LOGIC_VECTOR (6 DOWNTO 0));
+  END COMPONENT;
 
+  COMPONENT clk_divider PORT (clk_in : IN STD_LOGIC;
+    clk_out : OUT STD_LOGIC);
+  END COMPONENT;
+  SIGNAL clk_1Hz : STD_LOGIC;
+  SIGNAL in_modified : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL output_from_cpu : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL PC : STD_LOGIC_VECTOR(4 DOWNTO 0);
 
-signal clk_1Hz         : std_logic;
-signal in_modified     : std_logic_vector(7 downto 0);
-signal output_from_cpu : std_logic_vector(7 downto 0);
-signal PC              : std_logic_vector(4 downto 0);
+BEGIN
 
-begin
-    
-    in_modified  <= "00000" & input_sw; 
-    
-    clk_div : clk_divider port map(clk_in   =>  clk,
-                                   clk_out  =>  clk_1Hz);
-                                   
-                                   
-    cpu_core: cpu_ctrl_dp port map( clk_cpu    => clk_1Hz,
-                                    rst_cpu    => rst_button,
-                                    entered_ip => entered_input,
-                                    input_cpu  => ,		-- port map this signal
-                                    output_cpu => , 		-- port map this signal
-                                    PC_output  => PC,
-                                    OPCODE_ouput => ,		-- port map this signal
-                                    done_cpu => );		-- port map this signal
+  in_modified <= "00000" & input_sw;
 
-    seven_seg: component sev_segment port map(DispVal => PC,
-                                              anode   => select_segment,
-                                              segOut  => PC_on_7_seg);
+  clk_div : clk_divider PORT MAP(
+    clk_in => clk,
+    clk_out => clk_1Hz);
+  cpu_core : cpu_ctrl_dp PORT MAP(
+    clk_cpu => clk_1Hz,
+    rst_cpu => rst_button,
+    entered_ip => entered_input,
+    input_cpu = >, -- port map this signal
+    output_cpu = >, -- port map this signal
+    PC_output => PC,
+    OPCODE_ouput = >, -- port map this signal
+    done_cpu =>); -- port map this signal
 
-end Behavioral;
+  seven_seg : COMPONENT sev_segment PORT MAP(
+    DispVal => PC,
+    anode => select_segment,
+    segOut => PC_on_7_seg);
+
+END Behavioral;

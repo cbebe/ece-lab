@@ -20,8 +20,8 @@
 -- The value stored in the output buffer will the output of this CPU. 
 -----------------------------
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -32,23 +32,21 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity tristatebuffer is PORT(
-            E   : IN std_logic;
-            D   : IN std_logic_vector(7 DOWNTO 0);
-            Y   : OUT std_logic_vector(7 DOWNTO 0));
-end tristatebuffer;
+ENTITY tristatebuffer IS PORT (
+  E : IN STD_LOGIC;
+  D : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  Y : OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
+END tristatebuffer;
 
 ARCHITECTURE Behavioral OF TriStateBuffer IS
 BEGIN
-    PROCESS (---) -- complete the sensitivity list 
-        BEGIN
-        IF (E = '1') THEN
-            -- ****************************************
-	    -- write one line of code here
-
-
-        ELSE
-            Y <= (OTHERS => 'Z'); 
-        END IF;
-    END PROCESS;
-END Behavioral;           
+  PROCESS (---) -- complete the sensitivity list 
+  BEGIN
+    IF (E = '1') THEN
+      -- ****************************************
+      -- write one line of code here
+    ELSE
+      Y <= (OTHERS => 'Z');
+    END IF;
+  END PROCESS;
+END Behavioral;
