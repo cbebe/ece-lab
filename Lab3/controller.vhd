@@ -80,31 +80,31 @@ ARCHITECTURE Behavior OF controller IS
   FUNCTION part_1 RETURN PM_BLOCK IS
     VARIABLE PM : PM_BLOCK;
   BEGIN
-    PM(0) := INA & "0000";
-    PM(1) := INA & "0001";
-    PM(2) := JZ & "0000";
-    PM(3) := "00000100";
-    PM(4) := SHFL & "0000";
-    PM(5) := OUTA & "0000";
-    PM(6) := LDI & "0000";
-    PM(7) := "00001010";
-    PM(8) := SHFR & "0000";
-    PM(9) := OUTA & "0000";
-    PM(10) := HALT & "0000";
+    PM(0) := INA & "0000"; --   IN A (0)
+    PM(1) := INA & "0001"; --   IN A (1)
+    PM(2) := JZ & "0000"; --    JZ 05
+    PM(3) := "00000101"; --     05
+    PM(4) := SHFL & "0001"; --  SHFL A (1)
+    PM(5) := OUTA & "0000"; --  OUT A
+    PM(6) := LDI & "0000"; --   LDI A, 10
+    PM(7) := "00001010"; --     10
+    PM(8) := SHFR & "0001"; --  SHFR A
+    PM(9) := OUTA & "0000"; --  OUT A
+    PM(10) := HALT & "0000"; -- HALT
     RETURN PM;
   END FUNCTION part_1;
 
   FUNCTION part_2 RETURN PM_BLOCK IS
     VARIABLE PM : PM_BLOCK;
   BEGIN
-    PM(0) := INA & "0000";
-    PM(1) := INA & "0001";
-    PM(2) := STA & "0" & "000";
-    PM(3) := LDI & "0000";
-    PM(4) := "00001111";
-    PM(5) := ADD & "0" & "000";
-    PM(6) := OUTA & "0000";
-    PM(10) := HALT & "0000";
+    PM(0) := INA & "0000"; --   IN A (0)
+    PM(1) := INA & "0001"; --   IN A (1)
+    PM(2) := STA & "0000"; --   STA R[0], A
+    PM(3) := LDI & "0000"; --   LDI A, 15
+    PM(4) := "00001111"; --     15
+    PM(5) := ADD & "0000"; --   ADD A, R[0]
+    PM(6) := OUTA & "0000"; --  OUT A
+    PM(10) := HALT & "0000"; -- HALT
     RETURN PM;
   END FUNCTION part_2;
 
@@ -143,6 +143,7 @@ BEGIN
       -- for example this is how the instructions will be stored in the program memory
       --                PM(0) := "XXXXXXXX";    
       PM := part_1;
+      -- PM := part_2;
       -- **************
 
     ELSIF (clk_ctrl'event AND clk_ctrl = '1') THEN
@@ -253,7 +254,6 @@ BEGIN
           -- *********************************
           -- write the entire state for LDI_execute
           muxsel_ctrl <= "11";
-          PC <= PC + 1;
           imm_ctrl <= PM(PC);
           accwr_ctrl <= '1'; -- write to accumulator
           rfaddr_ctrl <= IR(2 DOWNTO 0);
@@ -268,7 +268,10 @@ BEGIN
           -- *********************************
           -- write the entire state for JZ_execute 
           muxsel_ctrl <= "11";
-          imm_ctrl <= PM(PC + 1);
+          imm_ctrl <= PM(PC);
+          IF zero_flag THEN
+            PC <= imm_ctrl;
+          END IF;
           accwr_ctrl <= '1';
           rfaddr_ctrl <= "000";
           rfwr_ctrl <= '0';
