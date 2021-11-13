@@ -8,12 +8,14 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU LAB 3 - ECE 410 (2020)
+-- Description: CPU LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Raju Machupalli (October 31, 2021)
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- This reg_file has 8 locations each of 8-bits. Address lines are used to select from 
@@ -45,12 +47,12 @@ BEGIN
     IF (clk_rf'event AND clk_rf = '1') THEN
       IF (wr_rf = '1') THEN
         -- ********************************************************
-        -- write one of line here
+        -- write one line code here
         RF(to_integer(unsigned(addr_rf))) <= input_rf;
         -----------------------------------------------------------
       ELSE
         -- ********************************************************
-        -- write one of line here
+        -- write one line of code here
         output_rf <= RF(to_integer(unsigned(addr_rf)));
         -----------------------------------------------------------
       END IF;

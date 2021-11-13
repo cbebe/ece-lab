@@ -8,12 +8,14 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU LAB 3 - ECE 410 (2020)
+-- Description: CPU LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Raju Machupalli (October 31, 2021)
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- Total eights operations can be performed using 3 select lines of this ALU.
@@ -25,22 +27,22 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 -- The following package is needed so that the STD_LOGIC_VECTOR signals
 -- A and B can be used in unsigned arithmetic operations.
+USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
-USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY alu IS PORT (
   clk_alu : IN STD_LOGIC;
   sel_alu : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-  bit_alu : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- number of bits to shift left/right
   inA_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
   inB_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+  bits_shift : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- decides how much to shift during shift left and shift right operation (decide from last 2 bits in the SHFL/SHFR operation)
   OUT_alu : OUT STD_LOGIC_VECTOR (7 DOWNTO 0) := "00000000");
 END alu;
 
 ARCHITECTURE Behavior OF alu IS
+  CONSTANT zero : STD_LOGIC_VECTOR(2 DOWNTO 0) := "000";
 BEGIN
-  PROCESS (clk_alu) -- complete the sensitivity list here!
-
+  PROCESS (clk_alu) -- complete the sensitivity list here! *********************************
   BEGIN
     IF clk_alu'event AND clk_alu = '1' THEN
       CASE sel_alu IS
@@ -49,17 +51,15 @@ BEGIN
         WHEN "001" =>
           OUT_alu <= inA_alu AND inB_alu;
         WHEN "010" =>
-          --                                shift left with 0
+          -- shift left based on "bits_shift"
           -- ***************************************
-          -- write one line of code here to perform shift left
-          OUT_alu <= STD_LOGIC_VECTOR(shift_left(unsigned(inA_alu),
-            to_integer(unsigned(bit_alu))));
+          OUT_alu <= inA_alu(7 - conv_integer(unsigned(bits_shift)) DOWNTO 0)
+            & zero(conv_integer(unsigned(bits_shift)) DOWNTO 0);
         WHEN "011" =>
-          --                                shift right with 0
+          -- shift right based on "bits_shift"
           -- ***************************************
-          -- write one line of code here to perform shift right
-          OUT_alu <= STD_LOGIC_VECTOR(shift_right(unsigned(inA_alu),
-            to_integer(unsigned(bit_alu))));
+          OUT_alu <= zero(conv_integer(unsigned(bits_shift)) DOWNTO 0)
+            & inA_alu(7 DOWNTO conv_integer(unsigned(bits_shift)));
         WHEN "100" =>
           OUT_alu <= inA_alu + inB_alu;
         WHEN "101" =>

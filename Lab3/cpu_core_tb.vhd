@@ -8,12 +8,14 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU LAB 3 - ECE 410 (2020)
+-- Description: CPU LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Raju Machupalli (October 31, 2021)
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 -- 
 ----------------------------------------------------------------------------------
@@ -85,12 +87,12 @@ BEGIN
     --*********************************
     -- provide the required input stimulus here for the design under test
     rst_tb <= '1';
-    enter <='1';
-    in_tb <="00000000";
+    enter <= '1';
+    in_tb <= "00000000";
     WAIT FOR clk_period;
-    rst_tb <='0';
-    -----------------------------------
+    rst_tb <= '0';
     WAIT;
+    -----------------------------------
   END PROCESS;
 
 END behavior;

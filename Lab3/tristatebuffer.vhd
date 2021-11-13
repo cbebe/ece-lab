@@ -8,12 +8,13 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU_LAB 3 - ECE 410 (2020)
+-- Description: CPU_LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- When the enable line is asserted, the output from the accumulator will be stored in the buffer.
@@ -40,14 +41,15 @@ END tristatebuffer;
 
 ARCHITECTURE Behavioral OF TriStateBuffer IS
 BEGIN
-  PROCESS (E) -- complete the sensitivity list 
+  PROCESS (E) -- complete the sensitivity list ***********************************************
   BEGIN
     IF (E = '1') THEN
       -- ****************************************
       -- write one line of code here
       Y <= D;
+      -------------------------------------------
     ELSE
-      Y <= (OTHERS => 'Z');
+      Y <= (OTHERS => 'Z'); -- gets 8 Z values in the simulation waveform...
     END IF;
   END PROCESS;
 END Behavioral;

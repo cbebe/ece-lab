@@ -8,19 +8,21 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU_PART 1 OF LAB 3 - ECE 410 (2020)
+-- Description: CPU_PART 1 OF LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Raju Machupalli (October 31, 2021)
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- datapath module that maps all the components used... 
 -----------------------------------------------------------------------------------
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
 
 ENTITY datapath IS PORT (
   clk_dp : IN STD_LOGIC;
@@ -32,12 +34,16 @@ ENTITY datapath IS PORT (
   rfaddr_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0); -- select signal for choosing between the eight register locations
   rfwr_dp : IN STD_LOGIC; -- write control signal asserted to write to register file
   alusel_dp : IN STD_LOGIC_VECTOR(2 DOWNTO 0); -- select signal for the eight ALU operations
-  alubit_dp : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- number of bits to shift
   outen_dp : IN STD_LOGIC; -- outer buffer enable signal for the output buffer 
+
+  bits_sel_dp : IN STD_LOGIC; -- select signal to load the bits either in upper or lower nibble of the input
+  bits_shift_dp : IN STD_LOGIC_VECTOR(1 DOWNTO 0); -- signal for shifting operation of the number by these many bits
+
   zero_dp : OUT STD_LOGIC; -- output zero flag signal
   positive_dp : OUT STD_LOGIC; -- output positive flag signal
   output_dp : OUT STD_LOGIC_VECTOR(7 DOWNTO 0));
 END datapath;
+
 ARCHITECTURE struct OF datapath IS
 
   COMPONENT mux4 PORT (
@@ -65,9 +71,9 @@ ARCHITECTURE struct OF datapath IS
   COMPONENT alu PORT (
     clk_alu : IN STD_LOGIC;
     sel_alu : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-    bit_alu : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
     inA_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
     inB_alu : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    bits_shift : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
     OUT_alu : OUT STD_LOGIC_VECTOR (7 DOWNTO 0));
   END COMPONENT;
   COMPONENT tristatebuffer PORT (
@@ -77,7 +83,7 @@ ARCHITECTURE struct OF datapath IS
   END COMPONENT;
 
   -----------------------------------------------------------------------------------
-  SIGNAL C_aluout, C_accout, C_rfout, C_muxout : STD_LOGIC_VECTOR(7 DOWNTO 0);
+  SIGNAL C_aluout, C_accout, C_rfout, C_muxout, usr_input : STD_LOGIC_VECTOR(7 DOWNTO 0);
   SIGNAL C_outen : STD_LOGIC;
   -----------------------------------------------------------------------------------
 
@@ -91,6 +97,7 @@ BEGIN
     -- map the remaining signals here for this component
     in1_mux => C_aluout,
     in0_mux => C_rfout,
+    -------------------------------------------
     out_mux => C_muxout);
 
   U1 : accum PORT MAP(
@@ -106,15 +113,16 @@ BEGIN
     -- map the remaining signals here for this component
     wr_rf => rfwr_dp,
     addr_rf => rfaddr_dp,
+    -------------------------------------------
     input_rf => C_accout,
     output_rf => C_rfout);
 
   U3 : alu PORT MAP(
     clk_alu => clk_dp,
     sel_alu => alusel_dp,
-    bit_alu => alubit_dp,
     inA_alu => C_accout,
     inB_alu => C_rfout,
+    bits_shift => bits_shift_dp,
     OUT_alu => C_aluout);
 
   C_outen <= outen_dp OR rst_dp;
@@ -125,7 +133,22 @@ BEGIN
     Y => output_dp);
 
   -- ***********************************************************
-  -- write two lines for zero flag and positive flag here
+  -- Write lines of code here for "usr_input" based on the "bits_sel_dp" signal
+  PROCESS (bits_sel_dp)
+  BEGIN
+    IF bits_sel_dp = '1' THEN
+      -- write two lines of logic code here
+
+    ELSE
+      -- write two lines of logic code here
+
+    END IF;
+  END PROCESS;
+
+  --------------------------------------------------------------
+
+  -- ***********************************************************
+  -- Write two lines for zero flag and positive flag here (hint: these flags are being detected at the output of 4:1 mux)
   --------------------------------------------------------------
   zero_dp <= NOR(C_muxout); -- output zero flag signal
   positive_dp <= C_muxout(C_muxout'high); -- check MSB

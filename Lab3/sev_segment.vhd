@@ -8,12 +8,13 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU OF LAB 3 - ECE 410 (2020)
+-- Description: CPU OF LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- This the seven segment that will display the current Program counter on any one of the two display(seven-segment)
@@ -48,14 +49,15 @@ BEGIN
     "0000111" WHEN "00111", --7
     "1111111" WHEN "01000", --8
     "1101111" WHEN "01001", --9
+    -- ***************************************
+    -- write the remaining lines to display from A to F, when "others" is provided to you...
     "1110111" WHEN "01010", --A (10)
     "1111100" WHEN "01011", --B (11)
     "0111001" WHEN "01100", --C (12)
     "1011110" WHEN "01101", --D (13)
     "1111001" WHEN "01110", --E (14)
     "1110001" WHEN "01111", --F (15)
-    -- ***************************************
-    -- write the remaining lines to display from A to F, when "others" is provided to you...
+    ------------------------------------------
 
     "1000000" WHEN OTHERS;
 

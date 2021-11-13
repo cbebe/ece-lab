@@ -8,12 +8,14 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU LAB 3 - ECE 410 (2020)
+-- Description: CPU LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Raju Machupalli (October 31, 2021)
+-- Revision 2.01 - File Modified by Shyama Gandhi (November 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 -- 8-bit accumulator register as shown in the datapath of lab manual
@@ -51,7 +53,7 @@ BEGIN
       output_acc <= (OTHERS => '0');
     ELSIF (clk_acc'event) AND (clk_acc = '1') AND (wr_acc = '1') THEN
       -- **************************************************************
-      -- write one line of code here
+      -- write one line of code here when wr_acc='1'
       output_acc <= input_acc;
       -----------------------------------------------------------------
     END IF;

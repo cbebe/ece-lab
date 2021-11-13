@@ -8,12 +8,13 @@
 -- Project Name:
 -- Target Devices:
 -- Tool Versions:
--- Description: CPU LAB 3 - ECE 410 (2020)
+-- Description: CPU LAB 3 - ECE 410 (2021)
 --
 -- Dependencies:
 --
 -- Revision:
 -- Revision 0.01 - File Created
+-- Revision 1.01 - File Modified by Shyama Gandhi (Nov 2, 2021)
 -- Additional Comments:
 --*********************************************************************************
 --THIS IS A 4x1 MUX that selects between the four inputs as shown in the lab manual.
@@ -40,6 +41,8 @@ BEGIN
       out_mux <= in1_mux;
     ELSIF (sel_mux = "00") THEN
       out_mux <= in0_mux;
+    ELSE
+      out_mux <= (OTHERS => 'X');
     END IF;
 
   END PROCESS;
