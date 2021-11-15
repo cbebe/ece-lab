@@ -87,11 +87,14 @@ BEGIN
     --*********************************
     -- provide the required input stimulus here for the design under test
     rst_tb <= '1';
+    -- in_tb <= "00001010";
     enter <= '1';
-    in_tb <= "00000000";
-    WAIT FOR clk_period;
+    wait until rising_edge(clk_tb);
     rst_tb <= '0';
-    WAIT;
+    in_tb <= "00000001";
+    wait until rising_edge(clk_tb);
+    in_tb <= "00000000"; 
+    wait until done = '1';
     -----------------------------------
   END PROCESS;
 
