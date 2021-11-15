@@ -53,14 +53,24 @@ BEGIN
         WHEN "010" =>
           -- shift left based on "bits_shift"
           -- ***************************************
-          OUT_alu <= inA_alu(7 - conv_integer(unsigned(bits_shift)) DOWNTO 0)
-            & zero(conv_integer(unsigned(bits_shift)) DOWNTO 0);
+          CASE bits_shift is
+            WHEN "00" => OUT_alu <= inA_alu; 
+	        WHEN "01" => OUT_alu <= inA_alu(6 DOWNTO 0) & "0";
+            WHEN "10" => OUT_alu <= inA_alu(5 DOWNTO 0) & "00";
+            WHEN "11" => OUT_alu <= inA_alu(4 DOWNTO 0) & "000";
+	        WHEN OTHERS => OUT_alu <= (OTHERS => 'X');
+	      END CASE;
         WHEN "011" =>
           -- shift right based on "bits_shift"
           -- ***************************************
-          OUT_alu <= zero(conv_integer(unsigned(bits_shift)) DOWNTO 0)
-            & inA_alu(7 DOWNTO conv_integer(unsigned(bits_shift)));
-        WHEN "100" =>
+          CASE bits_shift is
+            WHEN "00" => OUT_alu <= inA_alu; 
+       	    WHEN "01" => OUT_alu <= "0" & inA_alu(7 DOWNTO 1);
+            WHEN "10" => OUT_alu <= "00" & inA_alu(7 DOWNTO 2);
+            WHEN "11" => OUT_alu <= "000" & inA_alu(7 DOWNTO 3);
+	        WHEN OTHERS => OUT_alu <= (OTHERS => 'X');
+	      END CASE;
+	    WHEN "100" =>
           OUT_alu <= inA_alu + inB_alu;
         WHEN "101" =>
           OUT_alu <= inA_alu - inB_alu;
