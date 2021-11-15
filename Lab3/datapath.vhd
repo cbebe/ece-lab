@@ -23,6 +23,9 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
+USE IEEE.STD_LOGIC_ARITH.ALL;
+USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+
 
 ENTITY datapath IS PORT (
   clk_dp : IN STD_LOGIC;
@@ -89,10 +92,9 @@ ARCHITECTURE struct OF datapath IS
 
 BEGIN
 
-  U0 : mux4 PORT MAP(
-    sel_mux => muxsel_dp,
+  U0 : mux4 PORT MAP (sel_mux => muxsel_dp,
     in3_mux => imm_dp,
-    in2_mux => input_dp,
+    in2_mux => usr_input,
     -- ****************************************
     -- map the remaining signals here for this component
     in1_mux => C_aluout,
@@ -137,11 +139,12 @@ BEGIN
   PROCESS (bits_sel_dp)
   BEGIN
     IF bits_sel_dp = '1' THEN
-      -- write two lines of logic code here
-
+        usr_input(7 downto 4) <= input_dp(3 downto 0);
+        usr_input(3 downto 0) <= C_accout(3 downto 0);
     ELSE
       -- write two lines of logic code here
-
+        usr_input(3 downto 0) <= input_dp(3 downto 0);
+        usr_input(7 downto 4) <= C_accout(7 downto 4);
     END IF;
   END PROCESS;
 
@@ -150,7 +153,7 @@ BEGIN
   -- ***********************************************************
   -- Write two lines for zero flag and positive flag here (hint: these flags are being detected at the output of 4:1 mux)
   --------------------------------------------------------------
-  zero_dp <= NOR(C_muxout); -- output zero flag signal
-  positive_dp <= C_muxout(C_muxout'high); -- check MSB
+  zero_dp <= '1' when (C_accout = "00000000") else '0'; -- output zero flag signal
+  positive_dp <= NOT C_accout(7); -- check MSB
 
 END struct;
