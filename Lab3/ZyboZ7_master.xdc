@@ -140,7 +140,7 @@ set_property -dict { PACKAGE_PIN R14   IOSTANDARD LVCMOS33     } [get_ports { se
 #set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33     } [get_ports { display_sum[3] }]; #IO_L11P_T1_SRCC_34 Sch=jd_p[3]
 #set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33     } [get_ports { display_sum[4] }]; #IO_L11N_T1_SRCC_34 Sch=jd_n[3]
 #set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33     } [get_ports { display_sum[5] }]; #IO_L21P_T3_DQS_34 Sch=jd_p[4]
-set_property -dict { PACKAGE_PIN V18   IOSTANDARD LVCMOS33     } [get_ports { display_sum[6] }]; #IO_L21N_T3_DQS_34 Sch=jd_n[4]
+#set_property -dict { PACKAGE_PIN V18   IOSTANDARD LVCMOS33     } [get_ports { display_sum[6] }]; #IO_L21N_T3_DQS_34 Sch=jd_n[4]
 
 
 ##Pmod Header JE
