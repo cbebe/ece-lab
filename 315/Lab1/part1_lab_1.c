@@ -1,4 +1,3 @@
-
 /*
  *  ECE-315 WINTER 2021 - COMPUTER INTERFACING COURSE
  *
@@ -52,6 +51,8 @@
 #define SSD_DEVICE_ID XPAR_AXI_GPIO_PMOD_SSD_DEVICE_ID
 #define KYPD_DEVICE_ID XPAR_AXI_GPIO_PMOD_KEYPAD_DEVICE_ID
 
+#define SSD_MS_DELAY 16
+
 // Button Variable
 XGpio SSDInst, KYPDInst;
 
@@ -97,17 +98,28 @@ u32 SSD_decode(u8 key_value, u8 cathode) {
 
     /* clang-format off */
     switch(key_value) {
-        case 48: if (cathode == 0) return 0b00111111; else return 0b10111111;
-        case 49: if (cathode == 0) return 0b00000110; else return 0b10000110;
-        case 50: if (cathode == 0) return 0b01011011; else return 0b11011011;
-        case 51: if (cathode == 0) return 0b01001111; else return 0b11001111;
-        case 52: if (cathode == 0) return 0b01100110; else return 0b11100110;
-        case 53: if (cathode == 0) return 0b01101101; else return 0b11101101;
+        case 48: if (cathode == 0) return 0b00111111; else return 0b10111111; // 0
+        case 49: if (cathode == 0) return 0b00000110; else return 0b10000110; // 1
+        case 50: if (cathode == 0) return 0b01011011; else return 0b11011011; // 2
+        case 51: if (cathode == 0) return 0b01001111; else return 0b11001111; // 3
+        case 52: if (cathode == 0) return 0b01100110; else return 0b11100110; // 4
+        case 53: if (cathode == 0) return 0b01101101; else return 0b11101101; // 5
 
         /**********************************/
         //  Include the remaining cases of 6-F and default case here.....
         /**********************************/
+        case 54: if (cathode == 0) return 0b01111101; else return 0b11111101; // 6
+        case 55: if (cathode == 0) return 0b00000111; else return 0b10000111; // 7
+        case 56: if (cathode == 0) return 0b01111111; else return 0b11111111; // 8
+        case 57: if (cathode == 0) return 0b01101111; else return 0b11101111; // 9
 
+        case 65: if (cathode == 0) return 0b01110111; else return 0b11110111; // A
+        case 66: if (cathode == 0) return 0b01111100; else return 0b11111100; // B
+        case 67: if (cathode == 0) return 0b00111001; else return 0b10111001; // C
+        case 68: if (cathode == 0) return 0b01011110; else return 0b11011110; // D
+        case 69: if (cathode == 0) return 0b01111001; else return 0b11111001; // E
+        case 70: if (cathode == 0) return 0b01110001; else return 0b11110001; // F
+        default: if (cathode == 0) return 0b00000000; else return 0b00000000; // Invalid
     }
     /* clang-format on */
 }
@@ -126,7 +138,7 @@ int main(void) {
     /**********************************/
     // Set SSD GPIO direction to output here... (YOU MAY GET AND IDEA ON HOW TO
     // DO THIS FROM LAB_0)
-
+    XGpio_SetDataDirection(&SSDInst, 1, 0x00);
     /**********************************/
 
     xil_printf("Initialization Complete, System Ready!\n");
@@ -198,19 +210,21 @@ static void prvTxTask(void *pvParameters) {
             // from the above function on RIGHT SSD
             XGpio_DiscreteWrite(&SSDInst, 1, ssd_value);
 
-            vTaskDelay(pdMS_TO_TICKS(100));
+            vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
 
             /********************************************************************************/
             // write the 3 lines of code required to display the previous key on
             // LEFT SSD. Hint: Use the similar logic of current key in order to
             // display the previous key on LEFT SSD.
             /********************************************************************************/
+            ssd_value = SSD_decode(previous_key, 1);
+            XGpio_DiscreteWrite(&SSDInst, 1, ssd_value);
 
             // AFTER WRITING THE ABOVE GPIO functions for both SSD segments,
             // increase or decrease the time/frequency and see the frequency
             // where both segments appear to lit up simultaneously
             // in other words, the digit don't blink anymore now!!!
-            vTaskDelay(pdMS_TO_TICKS(100));
+            vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
         }
     }
 }
