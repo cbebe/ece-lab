@@ -51,36 +51,15 @@
 #define SSD_DEVICE_ID XPAR_AXI_GPIO_PMOD_SSD_DEVICE_ID
 #define KYPD_DEVICE_ID XPAR_AXI_GPIO_PMOD_KEYPAD_DEVICE_ID
 
+/* The maximum delay that prevents the SSD from flickering */
 #define SSD_MS_DELAY 16
+
+#define RIGHT_SSD 0
+#define LEFT_SSD 1
+#define OUTPUT_DIRECTION_MASK 0x00
 
 // Button Variable
 XGpio SSDInst, KYPDInst;
-
-/* The Tx described at the top of this file. */
-static void prvTxTask(void *pvParameters);
-
-void DemoInitialize();
-
-u32 SSD_decode(u8 key_value, u8 cathode);
-
-PmodKYPD myDevice;
-
-/*-----------------------------------------------------------*/
-
-static TaskHandle_t xTxTask;
-
-// keytable is determined as follows (indices shown in Keypad position below)
-// 12 13 14 15
-// 8  9  10 11
-// 4  5  6  7
-// 0  1  2  3
-
-#define DEFAULT_KEYTABLE "0FED789C456B123A"
-
-void DemoInitialize() {
-    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
-    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
-}
 
 /**
  * This function is hard coded to display the seven segment bits for two cases
@@ -95,34 +74,53 @@ void DemoInitialize() {
  * the start of the application.
  */
 u32 SSD_decode(u8 key_value, u8 cathode) {
-
     /* clang-format off */
     switch(key_value) {
-        case 48: if (cathode == 0) return 0b00111111; else return 0b10111111; // 0
-        case 49: if (cathode == 0) return 0b00000110; else return 0b10000110; // 1
-        case 50: if (cathode == 0) return 0b01011011; else return 0b11011011; // 2
-        case 51: if (cathode == 0) return 0b01001111; else return 0b11001111; // 3
-        case 52: if (cathode == 0) return 0b01100110; else return 0b11100110; // 4
-        case 53: if (cathode == 0) return 0b01101101; else return 0b11101101; // 5
-
-        /**********************************/
-        //  Include the remaining cases of 6-F and default case here.....
-        /**********************************/
-        case 54: if (cathode == 0) return 0b01111101; else return 0b11111101; // 6
-        case 55: if (cathode == 0) return 0b00000111; else return 0b10000111; // 7
-        case 56: if (cathode == 0) return 0b01111111; else return 0b11111111; // 8
-        case 57: if (cathode == 0) return 0b01101111; else return 0b11101111; // 9
-
-        case 65: if (cathode == 0) return 0b01110111; else return 0b11110111; // A
-        case 66: if (cathode == 0) return 0b01111100; else return 0b11111100; // B
-        case 67: if (cathode == 0) return 0b00111001; else return 0b10111001; // C
-        case 68: if (cathode == 0) return 0b01011110; else return 0b11011110; // D
-        case 69: if (cathode == 0) return 0b01111001; else return 0b11111001; // E
-        case 70: if (cathode == 0) return 0b01110001; else return 0b11110001; // F
-        default: if (cathode == 0) return 0b00000000; else return 0b00000000; // Invalid
+        case '0': if (cathode == 0) return 0b00111111; else return 0b10111111;
+        case '1': if (cathode == 0) return 0b00000110; else return 0b10000110;
+        case '2': if (cathode == 0) return 0b01011011; else return 0b11011011;
+        case '3': if (cathode == 0) return 0b01001111; else return 0b11001111;
+        case '4': if (cathode == 0) return 0b01100110; else return 0b11100110;
+        case '5': if (cathode == 0) return 0b01101101; else return 0b11101101;
+        case '6': if (cathode == 0) return 0b01111101; else return 0b11111101;
+        case '7': if (cathode == 0) return 0b00000111; else return 0b10000111;
+        case '8': if (cathode == 0) return 0b01111111; else return 0b11111111;
+        case '9': if (cathode == 0) return 0b01101111; else return 0b11101111;
+        case 'A': if (cathode == 0) return 0b01110111; else return 0b11110111;
+        case 'B': if (cathode == 0) return 0b01111100; else return 0b11111100;
+        case 'C': if (cathode == 0) return 0b00111001; else return 0b10111001;
+        case 'D': if (cathode == 0) return 0b01011110; else return 0b11011110;
+        case 'E': if (cathode == 0) return 0b01111001; else return 0b11111001;
+        case 'F': if (cathode == 0) return 0b01110001; else return 0b11110001;
+        default:  if (cathode == 0) return 0b00000000; else return 0b00000000;
     }
     /* clang-format on */
 }
+
+/**
+ * Decode the keypad code and display the key into the given SSD
+ * Also adds the delay SSD_MS_DELAY
+ */
+static inline void showKey(u8 key, u8 ssd) {
+    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
+    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
+}
+
+/* The Tx described at the top of this file. */
+static void prvTxTask(void *pvParameters);
+
+PmodKYPD myDevice;
+
+/*-----------------------------------------------------------*/
+
+static TaskHandle_t xTxTask;
+
+// keytable is determined as follows (indices shown in Keypad position below)
+// 12 13 14 15
+// 8  9  10 11
+// 4  5  6  7
+// 0  1  2  3
+#define DEFAULT_KEYTABLE "0FED789C456B123A"
 
 // MAIN FUNCTION
 int main(void) {
@@ -134,28 +132,20 @@ int main(void) {
         xil_printf("GPIO Initialization for SSD unsuccessful.\r\n");
         return XST_FAILURE;
     }
-
-    /**********************************/
-    // Set SSD GPIO direction to output here... (YOU MAY GET AND IDEA ON HOW TO
-    // DO THIS FROM LAB_0)
-    XGpio_SetDataDirection(&SSDInst, 1, 0x00);
-    /**********************************/
+    XGpio_SetDataDirection(&SSDInst, 1, OUTPUT_DIRECTION_MASK);
 
     xil_printf("Initialization Complete, System Ready!\n");
 
-    xTaskCreate(prvTxTask,          /* The function that implements the task. */
-                (const char *)"Tx", /* Text name for the task, provided to
-                                       assist debugging only. */
-                configMINIMAL_STACK_SIZE, /* The stack allocated to the task. */
-                NULL, /* The task parameter is not used, so set to NULL. */
-                tskIDLE_PRIORITY, /* The task runs at the idle priority. */
-                &xTxTask);
+    xTaskCreate(prvTxTask, (const char *)"Tx", configMINIMAL_STACK_SIZE, NULL,
+                tskIDLE_PRIORITY, &xTxTask);
 
-    DemoInitialize();
+    // Initialize keypad with keytable
+    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
+    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
 
     vTaskStartScheduler();
 
-    while (1)
+    for (;;)
         ;
 
     return 0;
@@ -167,14 +157,13 @@ static void prvTxTask(void *pvParameters) {
         u16 keystate;
         XStatus status, last_status = KYPD_NO_KEY;
         u8 new_key, current_key = 'x', previous_key = 'x';
-        u32 ssd_value = 0;
 
         // Initial value of last_key cannot be contained in loaded KEYTABLE
         // string
         Xil_Out32(myDevice.GPIO_addr, 0xF);
 
         xil_printf("Pmod KYPD demo started. Press any key on the Keypad.\r\n");
-        while (1) {
+        for (;;) {
             // Capture state of each key
             keystate = KYPD_getKeyStates(&myDevice);
 
@@ -186,11 +175,7 @@ static void prvTxTask(void *pvParameters) {
             if (status == KYPD_SINGLE_KEY &&
                 (status != last_status || new_key != current_key)) {
                 xil_printf("Key Pressed: %c\r\n", (char)new_key);
-                // Before the new key becomes the current key, we will first
-                // pass on the value of current_key to previous_key
                 previous_key = current_key;
-                // The current key digit showing on the right SSD will now store
-                // the new key pressed by the user
                 current_key = new_key;
             } else if (status == KYPD_MULTI_KEY && status != last_status)
                 xil_printf("Error: Multiple keys pressed\r\n");
@@ -199,32 +184,8 @@ static void prvTxTask(void *pvParameters) {
 
             //------------------------------------------------
             XGpio_DiscreteWrite(&SSDInst, 1, 0b10000000);
-            // The most recent key pressed by the user will show on the RIGHT
-            // SSD
-            // this function will decode the ASCII value
-            // obtained from keypad into the corresponding
-            // HEX value for display on SSD
-            ssd_value = SSD_decode(current_key, 0);
-
-            // The GPIO function to write the value obtained
-            // from the above function on RIGHT SSD
-            XGpio_DiscreteWrite(&SSDInst, 1, ssd_value);
-
-            vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
-
-            /********************************************************************************/
-            // write the 3 lines of code required to display the previous key on
-            // LEFT SSD. Hint: Use the similar logic of current key in order to
-            // display the previous key on LEFT SSD.
-            /********************************************************************************/
-            ssd_value = SSD_decode(previous_key, 1);
-            XGpio_DiscreteWrite(&SSDInst, 1, ssd_value);
-
-            // AFTER WRITING THE ABOVE GPIO functions for both SSD segments,
-            // increase or decrease the time/frequency and see the frequency
-            // where both segments appear to lit up simultaneously
-            // in other words, the digit don't blink anymore now!!!
-            vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
+            showKey(current_key, RIGHT_SSD);
+            showKey(previous_key, LEFT_SSD);
         }
     }
 }

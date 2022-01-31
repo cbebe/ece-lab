@@ -76,20 +76,19 @@ void DemoInitialize() {
 
 // valid key press from 0-9 has already been encoded for you.
 u32 SSD_decode(u8 key_value, u8 cathode) {
-
     /* clang-format off */
     switch (key_value) {
-        case 0:  if(cathode == 0) return 0b00111111; else return 0b10111111;
-        case 1:  if(cathode == 0) return 0b00000110; else return 0b10000110;
-        case 2:  if(cathode == 0) return 0b01011011; else return 0b11011011;
-        case 3:  if(cathode == 0) return 0b01001111; else return 0b11001111;
-        case 4:  if(cathode == 0) return 0b01100110; else return 0b11100110;
-        case 5:  if(cathode == 0) return 0b01101101; else return 0b11101101;
-        case 6:  if(cathode == 0) return 0b01111101; else return 0b11111101;
-        case 7:  if(cathode == 0) return 0b00000111; else return 0b10000111;
-        case 8:  if(cathode == 0) return 0b01111111; else return 0b11111111;
-        case 9:  if(cathode == 0) return 0b01101111; else return 0b11101111;
-        default: if(cathode == 0) return 0b00000000; else return 0b00000000;
+        case 0:  if (cathode == 0) return 0b00111111; else return 0b10111111;
+        case 1:  if (cathode == 0) return 0b00000110; else return 0b10000110;
+        case 2:  if (cathode == 0) return 0b01011011; else return 0b11011011;
+        case 3:  if (cathode == 0) return 0b01001111; else return 0b11001111;
+        case 4:  if (cathode == 0) return 0b01100110; else return 0b11100110;
+        case 5:  if (cathode == 0) return 0b01101101; else return 0b11101101;
+        case 6:  if (cathode == 0) return 0b01111101; else return 0b11111101;
+        case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
+        case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
+        case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
+        default: if (cathode == 0) return 0b00000000; else return 0b00000000;
     }
     /* clang-format on */
 }
@@ -174,6 +173,7 @@ static void prvTxTask(void *pvParameters) {
             // Hint: use the keystate variable to store the output Examine the
             // function KYPD_getKeyStates() to implement it.
             /*******************************************/
+            keystate = KYPD_getKeyStates(&myDevice);
 
             // Determine which single key is pressed, if any
             status = KYPD_getKeyPressed(&myDevice, keystate, &key);
@@ -204,8 +204,9 @@ static void prvTxTask(void *pvParameters) {
                 // this case write the required code inside the "if" black box
                 // given below!!!
                 /***************************************/
-                if (1) {
-
+                if ((char)key >= 'A' && (char)key <= 'D' || (char)key == 'F') {
+                    xil_printf("Keys A, B, C, D, and F are ignored for this "
+                               "application.\n");
                 }
                 // case when we consider input key strokes from '0' to '9'
                 // (only these are the valid key inputs for arithmetic
@@ -219,7 +220,7 @@ static void prvTxTask(void *pvParameters) {
                     if (store_key != 'x') {
                         xil_printf("Storing the operand %c to Queue...\n",
                                    (char)store_key);
-                        key_stroke_on_SSD = SSD_decode((int)store_key - 48, 0);
+                        key_stroke_on_SSD = SSD_decode((int)store_key - '0', 0);
                         // display the digit on SSD stored as an operand.
                         XGpio_DiscreteWrite(&SSDInst, 1, key_stroke_on_SSD);
 
