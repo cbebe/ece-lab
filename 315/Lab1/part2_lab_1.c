@@ -93,34 +93,31 @@ u32 SSD_decode(u8 key_value, u8 cathode) {
     /* clang-format on */
 }
 
+#define OUTPUT_DIRECTION_MASK 0x00
+#define INPUT_DIRECTION_MASK 0x01
+
+#define initializeGPIO(ptr, deviceID, name, direction)                         \
+    do {                                                                       \
+        if (XGPio_Initialize(ptr, deviceID) != XST_SUCCESS) {                  \
+            xil_printf("GPIO Initialization for " name " unsuccessful.\r\n");  \
+            return XST_FAILURE;                                                \
+        }                                                                      \
+        XGpio_SetDataDirection(ptr, 1, direction);                             \
+    } while (0)
+
 // MAIN FUNCTION
 int main(void) {
     int status;
 
-    // Initialize Push Buttons
-    status = XGpio_Initialize(&BTNInst, BTNS_DEVICE_ID);
-    if (status != XST_SUCCESS) {
-        xil_printf("GPIO Initialization for BUTTONS unsuccessful.\r\n");
-        return XST_FAILURE;
-    }
-
-    // Initialize SSD
-    status = XGpio_Initialize(&SSDInst, SSD_DEVICE_ID);
-    if (status != XST_SUCCESS) {
-        xil_printf("GPIO Initialization for SSD unsuccessful.\r\n");
-        return XST_FAILURE;
-    }
-
-    /*************************************/
-    // Set the directions of the buttons and SSD GPIO peripherals here
-    /*************************************/
+    initializeGPIO(&BTNInst, BTNS_DEVICE_ID, "BUTTONS", INPUT_DIRECTION_MASK);
+    initializeGPIO(&SSDInst, SSD_DEVICE_ID, "SSD", OUTPUT_DIRECTION_MASK);
 
     xil_printf("Initialization Complete, System Ready!\n");
 
-    /* Create the two tasks.  The Tx task is given a higher priority than the
-    Rx task. Dynamically changing the priority of Rx Task later on so the Rx
-    task will leave the Blocked state and pre-empt the Tx
-    task as soon as the Tx task fills the queue. */
+    /* Create the two tasks.  The Tx task is given a higher priority than
+    the Rx task. Dynamically changing the priority of Rx Task later on so
+    the Rx task will leave the Blocked state and preempt the Tx task as
+    soon as the Tx task fills the queue. */
     xTaskCreate(prvTxTask,          /* The function that implements the task. */
                 (const char *)"Tx", /* Text name for the task, provided to
                                        assist debugging only. */
