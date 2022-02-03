@@ -66,7 +66,8 @@ static QueueHandle_t xQueue = NULL;
 #define DEFAULT_KEYTABLE "0FED789C456B123A"
 
 #define OUTPUT_DIRECTION_MASK 0x00
-#define INPUT_DIRECTION_MASK 0x01
+#define INPUT_DIRECTION_MASK 0xFF
+#define NEGATIVE_SIGN 0xFF
 
 #define initializeGPIO(ptr, deviceID, name, direction)                         \
     do {                                                                       \
@@ -91,6 +92,7 @@ u32 SSD_decode(u8 key_value, u8 cathode) {
     case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
     case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
     case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
+    case NEGATIVE_SIGN: return 0b11000000;
     default: if (cathode == 0) return 0b00000000; else return 0b00000000;
     }
     /* clang-format on */
@@ -112,8 +114,6 @@ static inline void showKey(u8 key, u8 ssd) {
 
 // MAIN FUNCTION
 int main(void) {
-    int status;
-
     initializeGPIO(&BTNInst, BTNS_DEVICE_ID, "BUTTONS", INPUT_DIRECTION_MASK);
     initializeGPIO(&SSDInst, SSD_DEVICE_ID, "SSD", OUTPUT_DIRECTION_MASK);
 
@@ -205,7 +205,8 @@ static void prvTxTask(void *pvParameters) {
                 // this case write the required code inside the "if" black box
                 // given below!!!
                 /***************************************/
-                if ((char)key >= 'A' && (char)key <= 'D' || (char)key == 'F') {
+                if (((char)key >= 'A' && (char)key <= 'D') ||
+                    (char)key == 'F') {
                     xil_printf("Keys A, B, C, D, and F are ignored for this "
                                "application.\n");
                 }
@@ -236,7 +237,7 @@ static void prvTxTask(void *pvParameters) {
                         /****************************************/
                         // they want a u32 so we have to send a u32 address
                         key_stroke_on_SSD = store_key;
-                        xQueueSendToFront(xQueue, &key_stroke_on_SSD, 0UL);
+                        xQueueSendToBack(xQueue, &key_stroke_on_SSD, 0UL);
                     }
                 }
             }
@@ -256,7 +257,7 @@ static void prvRxTask(void *pvParameters) {
     for (;;) {
         u32 operands[2];
         u32 btn_value;
-        int result = 0, valid = 0, first = 1;
+        int result = 0, valid = 0, first = 1, modulo_error = 0;
 
         /***************************************/
         // write the code to read the queue values which store two operands for
@@ -281,15 +282,22 @@ static void prvRxTask(void *pvParameters) {
         // operation
         while (!valid) {
             btn_value = XGpio_DiscreteRead(&BTNInst, 1);
-            xil_printf("Read button value: %d\r\n", btn_value);
             vTaskDelay(pdMS_TO_TICKS(100));
             switch (btn_value) {
             /* clang-format off */
             case 1: result = operands[0] ^ operands[1]; valid = 1; break;
             case 2: result = operands[0] | operands[1]; valid = 1; break;
             case 4: result = operands[0] & operands[1]; valid = 1; break;
-            case 8: result = operands[0] % operands[1]; valid = 1; break;
             /* clang-format on */
+            case 8:
+                if (operands[1])
+                    result = operands[0] % operands[1];
+                else {
+                    xil_printf("Modulo division error!\r\n");
+                    modulo_error = 1;
+                }
+                valid = 1;
+                break;
             default:
                 if (first) {
                     xil_printf(
@@ -299,8 +307,6 @@ static void prvRxTask(void *pvParameters) {
                 }
             }
         }
-
-        xil_printf("Operation result = %d\n\n", result);
 
         // Once the result is computed, we wish to display it on SSD
         // the following logic is to extract the digits from the result. For
@@ -313,23 +319,21 @@ static void prvRxTask(void *pvParameters) {
         // between the input operands and the output result!
         vTaskDelay(pdMS_TO_TICKS(1500));
 
-        // Compute MSB and LSB digits for 2-digit output
-        u8 lsb = result % 10;
-        u8 msb = result / 10;
-
-        /**********************************************************************************/
-        // Use a for loop to display result for 100 Cycles (15ms + 15ms = 30
-        // ms/loop iteration = output displayed for 3 seconds) for two digits,
-        // first a right segment is seen and then left segment is lit up.
-        // introduce a delay between left and the right side of display on SSD
-        // such that both segments seem to lit up simultaneously! If you found
-        // out the appropriate frequency value in the previous part1, that might
-        // help!
-        /**********************************************************************************/
-        for (int i = 0; i < 100; ++i) {
-            // Compute MSB and LSB digits for 2-digit output
-            showKey(lsb, RIGHT_SSD);
-            showKey(msb, LEFT_SSD);
+        if (!modulo_error) {
+            xil_printf("Operation result = %d\n\n", result);
+            u8 lsb = result % 10;
+            u8 msb = result / 10;
+            for (int i = 0; i < 100; ++i) {
+                // Compute MSB and LSB digits for 2-digit output
+                showKey(lsb, RIGHT_SSD);
+                showKey(msb, LEFT_SSD);
+            }
+        } else {
+            for (int i = 0; i < 100; ++i) {
+                // Modulo error: display -1
+                showKey(1, RIGHT_SSD);
+                showKey(NEGATIVE_SIGN, LEFT_SSD);
+            }
         }
 
         // clear both the segments after the result is displayed.
