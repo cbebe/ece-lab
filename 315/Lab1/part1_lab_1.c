@@ -52,7 +52,7 @@
 #define KYPD_DEVICE_ID XPAR_AXI_GPIO_PMOD_KEYPAD_DEVICE_ID
 
 /* The maximum delay that prevents the SSD from flickering */
-#define SSD_MS_DELAY 16
+#define SSD_MS_DELAY 15
 
 #define RIGHT_SSD 0
 #define LEFT_SSD 1
