@@ -1,4 +1,3 @@
-
 /*
  *  ECE- 315 WINTER 2021 - COMPUTER INTERFACING COURSE
  *  Created on	: 	14 July, 2021
@@ -71,7 +70,7 @@ static QueueHandle_t xQueue = NULL;
 
 #define initializeGPIO(ptr, deviceID, name, direction)                         \
     do {                                                                       \
-        if (XGPio_Initialize(ptr, deviceID) != XST_SUCCESS) {                  \
+        if (XGpio_Initialize(ptr, deviceID) != XST_SUCCESS) {                  \
             xil_printf("GPIO Initialization for " name " unsuccessful.\r\n");  \
             return XST_FAILURE;                                                \
         }                                                                      \
@@ -222,6 +221,7 @@ static void prvTxTask(void *pvParameters) {
                     if (store_key != 'x') {
                         xil_printf("Storing the operand %c to Queue...\n",
                                    (char)store_key);
+                        store_key -= '0'; // turn into actual decimal value
                         key_stroke_on_SSD = SSD_decode(store_key, 0);
                         // display the digit on SSD stored as an operand.
                         XGpio_DiscreteWrite(&SSDInst, 1, key_stroke_on_SSD);
@@ -236,7 +236,7 @@ static void prvTxTask(void *pvParameters) {
                         /****************************************/
                         // they want a u32 so we have to send a u32 address
                         key_stroke_on_SSD = store_key;
-                        xQueueSendToBack(xQueue, &key_stroke_on_SSD, 0UL);
+                        xQueueSendToFront(xQueue, &key_stroke_on_SSD, 0UL);
                     }
                 }
             }
@@ -255,6 +255,7 @@ static void prvRxTask(void *pvParameters) {
 
     for (;;) {
         u32 operands[2];
+        u32 btn_value;
         int result = 0, valid = 0, first = 1;
 
         /***************************************/
@@ -262,7 +263,8 @@ static void prvRxTask(void *pvParameters) {
         // the calculation here. You may use operands[] for doing that or
         // your wish of variable can be used too.
         /***************************************/
-        xQueueReceive(xQueue, &operands, 0UL);
+        xQueueReceive(xQueue, operands, 0UL);
+        xQueueReceive(xQueue, operands + 1, 0UL);
         xil_printf("Received numbers from queue:\r\n"
                    "operands[0]: %d\r\n"
                    "operands[1]: %d\r\n",
@@ -278,7 +280,10 @@ static void prvRxTask(void *pvParameters) {
         // keep the button pressed for your choice of the arithmetic/logical
         // operation
         while (!valid) {
-            switch (XGpio_DiscreteRead(&BTNInst, 1)) {
+            btn_value = XGpio_DiscreteRead(&BTNInst, 1);
+            xil_printf("Read button value: %d\r\n", btn_value);
+            vTaskDelay(pdMS_TO_TICKS(100));
+            switch (btn_value) {
             /* clang-format off */
             case 1: result = operands[0] ^ operands[1]; valid = 1; break;
             case 2: result = operands[0] | operands[1]; valid = 1; break;
