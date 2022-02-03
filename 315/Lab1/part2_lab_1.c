@@ -56,9 +56,6 @@ XGpio BTNInst, SSDInst;
 static void prvTxTask(void *pvParameters);
 static void prvRxTask(void *pvParameters);
 
-void DemoInitialize();
-u32 SSD_decode(u8 key_value, u8 cathode);
-
 PmodKYPD myDevice;
 
 /*-----------------------------------------------------------*/
@@ -68,30 +65,6 @@ static TaskHandle_t xRxTask;
 static QueueHandle_t xQueue = NULL;
 
 #define DEFAULT_KEYTABLE "0FED789C456B123A"
-
-void DemoInitialize() {
-    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
-    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
-}
-
-// valid key press from 0-9 has already been encoded for you.
-u32 SSD_decode(u8 key_value, u8 cathode) {
-    /* clang-format off */
-    switch (key_value) {
-        case 0:  if (cathode == 0) return 0b00111111; else return 0b10111111;
-        case 1:  if (cathode == 0) return 0b00000110; else return 0b10000110;
-        case 2:  if (cathode == 0) return 0b01011011; else return 0b11011011;
-        case 3:  if (cathode == 0) return 0b01001111; else return 0b11001111;
-        case 4:  if (cathode == 0) return 0b01100110; else return 0b11100110;
-        case 5:  if (cathode == 0) return 0b01101101; else return 0b11101101;
-        case 6:  if (cathode == 0) return 0b01111101; else return 0b11111101;
-        case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
-        case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
-        case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
-        default: if (cathode == 0) return 0b00000000; else return 0b00000000;
-    }
-    /* clang-format on */
-}
 
 #define OUTPUT_DIRECTION_MASK 0x00
 #define INPUT_DIRECTION_MASK 0x01
@@ -104,6 +77,39 @@ u32 SSD_decode(u8 key_value, u8 cathode) {
         }                                                                      \
         XGpio_SetDataDirection(ptr, 1, direction);                             \
     } while (0)
+
+// valid key press from 0-9 has already been encoded for you.
+u32 SSD_decode(u8 key_value, u8 cathode) {
+    /* clang-format off */
+    switch (key_value) {
+    case 0:  if (cathode == 0) return 0b00111111; else return 0b10111111;
+    case 1:  if (cathode == 0) return 0b00000110; else return 0b10000110;
+    case 2:  if (cathode == 0) return 0b01011011; else return 0b11011011;
+    case 3:  if (cathode == 0) return 0b01001111; else return 0b11001111;
+    case 4:  if (cathode == 0) return 0b01100110; else return 0b11100110;
+    case 5:  if (cathode == 0) return 0b01101101; else return 0b11101101;
+    case 6:  if (cathode == 0) return 0b01111101; else return 0b11111101;
+    case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
+    case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
+    case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
+    default: if (cathode == 0) return 0b00000000; else return 0b00000000;
+    }
+    /* clang-format on */
+}
+
+/* The maximum delay that prevents the SSD from flickering */
+#define SSD_MS_DELAY 15
+#define RIGHT_SSD 0
+#define LEFT_SSD 1
+
+/**
+ * Decode the keypad code and display the key into the given SSD
+ * Also adds the delay SSD_MS_DELAY
+ */
+static inline void showKey(u8 key, u8 ssd) {
+    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
+    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
+}
 
 // MAIN FUNCTION
 int main(void) {
@@ -135,7 +141,9 @@ int main(void) {
     /* Check the queue was created. */
     configASSERT(xQueue);
 
-    DemoInitialize();
+    // Initialize keypad
+    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
+    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
 
     vTaskStartScheduler();
 
@@ -150,7 +158,6 @@ static void prvTxTask(void *pvParameters) {
     UBaseType_t uxPriority;
 
     for (;;) {
-        u16 keystate;
         XStatus status, last_status = KYPD_NO_KEY;
         u8 key, last_key = 'x', store_key = 'x';
         u32 key_stroke_on_SSD = 0;
@@ -164,19 +171,7 @@ static void prvTxTask(void *pvParameters) {
         uxPriority = uxTaskPriorityGet(NULL);
 
         while (1) {
-
-            /*******************************************/
-            // write one line of code to capture the state of each key here.
-            // Hint: use the keystate variable to store the output Examine the
-            // function KYPD_getKeyStates() to implement it.
-            /*******************************************/
-            keystate = KYPD_getKeyStates(&myDevice);
-
-            // Determine which single key is pressed, if any
-            status = KYPD_getKeyPressed(&myDevice, keystate, &key);
-
             if (uxQueueMessagesWaiting(xQueue) == 2) {
-
                 /*********************************/
                 // enter the function to dynamically change the priority when
                 // queue is full. This way when the queue is full here, we
@@ -185,7 +180,17 @@ static void prvTxTask(void *pvParameters) {
                 // change the priority here dynamically, make sure in the
                 // receive task to do the counter part!!!
                 /*********************************/
+                vTaskPrioritySet(NULL, uxPriority - 2);
             }
+
+            /*******************************************/
+            // write one line of code to capture the state of each key here.
+            // Hint: use the keystate variable to store the output Examine the
+            // function KYPD_getKeyStates() to implement it.
+            /*******************************************/
+            // Determine which single key is pressed, if any
+            status = KYPD_getKeyPressed(&myDevice, KYPD_getKeyStates(&myDevice),
+                                        &key);
 
             // Print key detect if a new key is pressed or if status has changed
             if (status == KYPD_SINGLE_KEY &&
@@ -217,7 +222,7 @@ static void prvTxTask(void *pvParameters) {
                     if (store_key != 'x') {
                         xil_printf("Storing the operand %c to Queue...\n",
                                    (char)store_key);
-                        key_stroke_on_SSD = SSD_decode((int)store_key - '0', 0);
+                        key_stroke_on_SSD = SSD_decode(store_key, 0);
                         // display the digit on SSD stored as an operand.
                         XGpio_DiscreteWrite(&SSDInst, 1, key_stroke_on_SSD);
 
@@ -229,6 +234,9 @@ static void prvTxTask(void *pvParameters) {
                         // is being used in this task that keeps the track of
                         // this key value (key presses before 'E')
                         /****************************************/
+                        // they want a u32 so we have to send a u32 address
+                        key_stroke_on_SSD = store_key;
+                        xQueueSendToBack(xQueue, &key_stroke_on_SSD, 0UL);
                     }
                 }
             }
@@ -243,43 +251,48 @@ static void prvTxTask(void *pvParameters) {
 }
 /*-----------------------------------------------------------*/
 static void prvRxTask(void *pvParameters) {
-    UBaseType_t uxPriority;
-    uxPriority = uxTaskPriorityGet(NULL);
+    UBaseType_t uxPriority = uxTaskPriorityGet(NULL);
 
     for (;;) {
-        u32 store_operands[2];
-        int result = 0;
-
-        unsigned int btn_value;
+        u32 operands[2];
+        int result = 0, valid = 0, first = 1;
 
         /***************************************/
         // write the code to read the queue values which store two operands for
-        // the calculation here. You may use store_operands[] for doing that or
+        // the calculation here. You may use operands[] for doing that or
         // your wish of variable can be used too.
         /***************************************/
+        xQueueReceive(xQueue, &operands, 0UL);
+        xil_printf("Received numbers from queue:\r\n"
+                   "operands[0]: %d\r\n"
+                   "operands[1]: %d\r\n",
+                   operands[0], operands[1]);
 
         /***************************************/
-        // read the btn value here to check what user has pressed (^/|/&/%) and
-        // store it in say "btn_value" variable declared in this task For
-        // btn(3:0) --> "1000" is for %, "0100" is for &, "0010" is for | and
-        // "0001" is for ^
+        // read the btn value here to check what user has pressed (^/|/&/%)
+        // and store it in say "btn_value" variable declared in this task
+        // For btn(3:0) --> "1000" is for %, "0100" is for &, "0010" is for
+        // | and "0001" is for ^
         /***************************************/
 
         // keep the button pressed for your choice of the arithmetic/logical
         // operation
-        switch (btn_value) {
-        case 1:
-            result = store_operands[0] ^ store_operands[1];
-            break;
-            /*****************************************************************************************/
-            // add the remaining cases here
-            // you may also use the default case to display nothing or some
-            // prompt message saying that no operation selected by user. in the
-            // case when no operation is selected, exit this task and go back to
-            // the TxTask if you want. you may also wait here until the user
-            // selects any operation, later on perform the calculation and then
-            // go to the TxTask.
-            /*****************************************************************************************/
+        while (!valid) {
+            switch (XGpio_DiscreteRead(&BTNInst, 1)) {
+            /* clang-format off */
+            case 1: result = operands[0] ^ operands[1]; valid = 1; break;
+            case 2: result = operands[0] | operands[1]; valid = 1; break;
+            case 4: result = operands[0] & operands[1]; valid = 1; break;
+            case 8: result = operands[0] % operands[1]; valid = 1; break;
+            /* clang-format on */
+            default:
+                if (first) {
+                    xil_printf(
+                        "Invalid operator! Please select a valid operator by "
+                        "only pressing one button at a time.\r\n");
+                    first = 0;
+                }
+            }
         }
 
         xil_printf("Operation result = %d\n\n", result);
@@ -299,9 +312,6 @@ static void prvRxTask(void *pvParameters) {
         u8 lsb = result % 10;
         u8 msb = result / 10;
 
-        u32 l_s_b = SSD_decode(lsb, 0);
-        u32 m_s_b = SSD_decode(msb, 1);
-
         /**********************************************************************************/
         // Use a for loop to display result for 100 Cycles (15ms + 15ms = 30
         // ms/loop iteration = output displayed for 3 seconds) for two digits,
@@ -311,6 +321,11 @@ static void prvRxTask(void *pvParameters) {
         // out the appropriate frequency value in the previous part1, that might
         // help!
         /**********************************************************************************/
+        for (int i = 0; i < 100; ++i) {
+            // Compute MSB and LSB digits for 2-digit output
+            showKey(lsb, RIGHT_SSD);
+            showKey(msb, LEFT_SSD);
+        }
 
         // clear both the segments after the result is displayed.
         XGpio_DiscreteWrite(&SSDInst, 1, 0b00000000);
