@@ -100,25 +100,22 @@ int main(void) {
     // Set RGB LED direction to output
     XGpio_SetDataDirection(&RGBInst, 1, 0x00);
 
-    /* Create the two tasks.  The Tx task is given a higher priority than the
-    Rx task. Dynamically changing the priority of Rx Task later on so the Rx
-    task will leave the Blocked state and pre-empt the Tx
-    task as soon as the Tx task fills the queue. */
+    /* Create the two tasks.  The Tx task is given a higher priority than the Rx task. Dynamically
+     * changing the priority of Rx Task later on so the Rx task will leave the Blocked state and
+     * pre-empt the Tx task as soon as the Tx task fills the queue. */
 
     xTaskCreate(prvTxTask,          // The function that implements the task.
-                (const char *)"Tx", // Text name for the task, provided to
-                                    // assist debugging only.
+                (const char *)"Tx", // Text name for the task, provided to assist debugging only.
                 configMINIMAL_STACK_SIZE, // The stack allocated to the task.
-                NULL, // The task parameter is not used, so set to NULL.
-                tskIDLE_PRIORITY + 2, // The task runs at the idle priority.
+                NULL,                     // The task parameter is not used, so set to NULL.
+                tskIDLE_PRIORITY + 2,     // The task runs at the idle priority.
                 &xTxTask);
 
-    xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL,
-                tskIDLE_PRIORITY + 1, &xRxTask);
+    xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
+                &xRxTask);
 
     /* Create the queue used by the tasks.
-     * There are three items in the queue, two operands and then operation using
-     * keypad
+     * There are three items in the queue, two operands and then operation using keypad
      * Each space in the queue is large enough to hold a uint32_t.
      */
     xQueue = xQueueCreate(3,
@@ -161,43 +158,37 @@ static void prvTxTask(void *pvParameters) {
             // Determine which single key is pressed, if any
             status = KYPD_getKeyPressed(&myDevice, keystate, &key);
 
-            // this functions returns the number of entries in the queue, so
-            // when the queue is full, i.e., 2 entries, decreased the priority
-            // of this task and hence receive task will immediately start to
-            // execute.
+            // this functions returns the number of entries in the queue, so when the queue is full,
+            // i.e., 2 entries, decreased the priority of this task and hence receive task will
+            // immediately start to execute.
             if (uxQueueMessagesWaiting(xQueue) == 3) {
 
                 /*********************************/
-                // enter the function to dynamically change the priority when
-                // queue is full. This way when the queue is full here, we
-                // change the priority of this task and hence queue will be read
-                // in the receive task to perform the operation. If you change
-                // the priority here dynamically, make sure in the receive task
-                // to do the counter part!!!
+                // enter the function to dynamically change the priority when queue is full.This way
+                // when the queue is full here, we change the priority of this task and hence queue
+                // will be read in the receive task to perform the operation.If you change the
+                // priority here dynamically, make sure in the receive task to do the counter part
+                // !!!
                 /*********************************/
             }
 
             // Print key detect if a new key is pressed or if status has changed
-            if (status == KYPD_SINGLE_KEY &&
-                (status != last_status || key != last_key)) {
+            if (status == KYPD_SINGLE_KEY && (status != last_status || key != last_key)) {
                 xil_printf("Key Pressed: %c\r\n", (char)key);
                 last_key = key;
 
-                // whenever 'F' is pressed, the aggregated number will be
-                // registered as an operand
+                // whenever 'F' is pressed, the aggregated number will be registered as an operand
                 if ((char)key == 'F') {
-                    xil_printf("Final current_value of operand= %d\n",
-                               current_value);
+                    xil_printf("Final current_value of operand= %d\n", current_value);
 
                     /*******************************/
-                    // write the logic to enter the updated variable here to the
-                    // Queue
+                    // write the logic to enter the updated variable here to the Queue
                     /*******************************/
 
                     current_value = 0;
                 }
-                // if 'E' is pressed, it resets the current value of the operand
-                // and allows the user to enter a new value
+                // if 'E' is pressed, it resets the current value of the operand and allows the user
+                // to enter a new value
                 else if ((char)key == 'E') {
                     xil_printf("current_value of operand has been reset. "
                                "Please enter the new value.\n");
@@ -205,25 +196,22 @@ static void prvTxTask(void *pvParameters) {
                     factor = 0;
                     current_value = 0;
                 }
-                // case when we consider input key strokes from '0' to '9' (only
-                // these are the valid key inputs for all the four operations)
-                // the current_value is aggregated as the user presses
-                // consecutive digits e.g. if the user presses the following
-                // digits in this order 4 > 5 > 8  => current_value will end up
-                // being 458
+                // case when we consider input key strokes from '0' to '9' (only these are the valid
+                // key inputs for all the four operations) the current_value is aggregated as the
+                // user presses consecutive digits e.g. if the user presses the following digits in
+                // this order 4 > 5 > 8  => current_value will end up being 458
                 else if (key >= '0' && key <= '9') {
                     factor = (int)(key - '0');
                     current_value = current_value * 10 + factor;
                     xil_printf("current_value = %d\n", current_value);
                 } else if ((uxQueueMessagesWaiting(xQueue) == 2) &&
-                           ((char)key == 'A' || (char)key == 'B' ||
-                            (char)key == 'C' || (char)key == 'D')) {
+                           ((char)key == 'A' || (char)key == 'B' || (char)key == 'C' ||
+                            (char)key == 'D')) {
 
                     /*****************************************/
-                    // once two operands are in the queue, enter the third value
-                    // to the queue to indicate the operation to be performed
-                    // using A,B,C or D key store the current key value to the
-                    // queue as the third element
+                    // once two operands are in the queue, enter the third value to the queue to
+                    // indicate the operation to be performed using A,B,C or D key store the current
+                    // key value to the queue as the third element
                     /*****************************************/
 
                     current_value = 0;
@@ -248,25 +236,20 @@ static void prvRxTask(void *pvParameters) {
     for (;;) {
 
         /***************************************/
-        //...Write code here to read the three elements from the queue and
-        // perform the required operation.
-        //...Display the output result on the console for all the four
-        // operations.
-        //...If you have dynamically changed the priority of this task in
-        // TxTask, you need to change the priority here accordingly,
-        // respectively using vTaskPrioritySet(). This can be done after 	 you
-        // finish calculation part.
-        //...This way once the RxTask is done, TxTask will have a higher
-        // priority and hence will wait for the next series of inputs from the
-        // user
-        //...You can write a switch-case statement or if-else statements for
-        // each different operation
-        //...For the Palindrome check, think of a way to find the reverse of
-        // each operand (two loops for each operand!) Compared this reverse
-        // operand with the original operand.
-        //...For RGB led, look at the function that was used in previous labs
-        // for writing the value to the led. Initialization and color definition
-        // is already provided to you in this file.
+        // ...Write code here to read the three elements from the queue and perform the required
+        // operation.
+        // ...Display the output result on the console for all the four operations.
+        // ...If you have dynamically changed the priority of this task in TxTask, you need to
+        // change the priority here accordingly, respectively using vTaskPrioritySet(). This can be
+        // done after you finish calculation part.
+        // ...This way once the RxTask is done, TxTask will have a higher priority and hence will
+        // wait for the next series of inputs from the user
+        // ...You can write a switch-case statement or if-else statements for each different
+        // operation
+        //...For the Palindrome check, think of a way to find the reverse of each operand (two loops
+        // for each operand!) Compared this reverse operand with the original operand.
+        // ...For RGB led, look at the function that was used in previous labs for writing the value
+        // to the led. Initialization and color definition is already provided to you in this file.
         /***************************************/
     }
 }

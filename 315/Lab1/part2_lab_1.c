@@ -69,13 +69,13 @@ static QueueHandle_t xQueue = NULL;
 #define INPUT_DIRECTION_MASK 0xFF
 #define NEGATIVE_SIGN 0xFF
 
-#define initializeGPIO(ptr, deviceID, name, direction)                         \
-    do {                                                                       \
-        if (XGpio_Initialize(ptr, deviceID) != XST_SUCCESS) {                  \
-            xil_printf("GPIO Initialization for " name " unsuccessful.\r\n");  \
-            return XST_FAILURE;                                                \
-        }                                                                      \
-        XGpio_SetDataDirection(ptr, 1, direction);                             \
+#define initializeGPIO(ptr, deviceID, name, direction)                                             \
+    do {                                                                                           \
+        if (XGpio_Initialize(ptr, deviceID) != XST_SUCCESS) {                                      \
+            xil_printf("GPIO Initialization for " name " unsuccessful.\r\n");                      \
+            return XST_FAILURE;                                                                    \
+        }                                                                                          \
+        XGpio_SetDataDirection(ptr, 1, direction);                                                 \
     } while (0)
 
 // valid key press from 0-9 has already been encoded for you.
@@ -119,22 +119,20 @@ int main(void) {
 
     xil_printf("Initialization Complete, System Ready!\n");
 
-    /* Create the two tasks.  The Tx task is given a higher priority than
-    the Rx task. Dynamically changing the priority of Rx Task later on so
-    the Rx task will leave the Blocked state and preempt the Tx task as
-    soon as the Tx task fills the queue. */
+    // Create the two tasks.  The Tx task is given a higher priority than the Rx task. Dynamically
+    // changing the priority of Rx Task later on so the Rx task will leave the Blocked state and
+    // preempt the Tx task as soon as the Tx task fills the queue.
     xTaskCreate(prvTxTask,          /* The function that implements the task. */
-                (const char *)"Tx", /* Text name for the task, provided to
-                                       assist debugging only. */
+                (const char *)"Tx", /* Text name for the task, provided to assist debugging only. */
                 configMINIMAL_STACK_SIZE, /* The stack allocated to the task. */
-                NULL, /* The task parameter is not used, so set to NULL. */
-                tskIDLE_PRIORITY + 2, /* The task runs at the idle priority. */
+                NULL,                     /* The task parameter is not used, so set to NULL. */
+                tskIDLE_PRIORITY + 2,     /* The task runs at the idle priority. */
                 &xTxTask);
 
-    xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL,
-                tskIDLE_PRIORITY + 1, &xRxTask);
-    /* There are only two spaces in the queue. */
-    /* Each space in the queue is large enough to hold a uint32_t. */
+    xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
+                &xRxTask);
+    // There are only two spaces in the queue. Each space in the queue is large enough to hold a
+    // uint32_t.
     xQueue = xQueueCreate(2, sizeof(unsigned int));
 
     /* Check the queue was created. */
@@ -161,8 +159,7 @@ static void prvTxTask(void *pvParameters) {
         u8 key, last_key = 'x', store_key = 'x';
         u32 key_stroke_on_SSD = 0;
 
-        // Initial value of last_key cannot be contained in loaded KEYTABLE
-        // string
+        // Initial value of last_key cannot be contained in loaded KEYTABLE string
         Xil_Out32(myDevice.GPIO_addr, 0xF);
 
         xil_printf("PMOD KYPD demo started. Press any key on the Keypad.\r\n");
@@ -172,74 +169,61 @@ static void prvTxTask(void *pvParameters) {
         while (1) {
             if (uxQueueMessagesWaiting(xQueue) == 2) {
                 /*********************************/
-                // enter the function to dynamically change the priority when
-                // queue is full. This way when the queue is full here, we
-                // change the priority of this task. and hence queue will be
-                // read in the receive task to perform the operation. If you
-                // change the priority here dynamically, make sure in the
-                // receive task to do the counter part!!!
+                // enter the function to dynamically change the priority when queue is full. This
+                // way when the queue is full here, we change the priority of this task. and hence
+                // queue will be read in the receive task to perform the operation. If you change
+                // the priority here dynamically, make sure in the receive task to do the counter
+                // part!!!
                 /*********************************/
                 vTaskPrioritySet(NULL, uxPriority - 2);
             }
 
             /*******************************************/
             // write one line of code to capture the state of each key here.
-            // Hint: use the keystate variable to store the output Examine the
-            // function KYPD_getKeyStates() to implement it.
+            // Hint: use the keystate variable to store the output Examine the function
+            // KYPD_getKeyStates() to implement it.
             /*******************************************/
             // Determine which single key is pressed, if any
-            status = KYPD_getKeyPressed(&myDevice, KYPD_getKeyStates(&myDevice),
-                                        &key);
+            status = KYPD_getKeyPressed(&myDevice, KYPD_getKeyStates(&myDevice), &key);
 
             // Print key detect if a new key is pressed or if status has changed
-            if (status == KYPD_SINGLE_KEY &&
-                (status != last_status || key != last_key)) {
+            if (status == KYPD_SINGLE_KEY && (status != last_status || key != last_key)) {
                 xil_printf("Key Pressed: %c\r\n", (char)key);
                 last_key = key;
 
                 /***************************************/
-                // Keys 'A', 'B', 'C', 'D' and 'F' will be ignored for this part
-                // of the lab 1. So, if user hits these keys, consider them
-                // invalid. write the code to consider these key presses as
-                // invalid (use if condition) and prompt a message to user in
-                // this case write the required code inside the "if" black box
-                // given below!!!
+                // Keys 'A', 'B', 'C', 'D' and 'F' will be ignored for this part of the lab 1. So,
+                // if user hits these keys, consider them invalid. write the code to consider these
+                // key presses as invalid (use if condition) and prompt a message to user in this
+                // case write the required code inside the "if" black box given below!!!
                 /***************************************/
-                if (((char)key >= 'A' && (char)key <= 'D') ||
-                    (char)key == 'F') {
-                    xil_printf("Keys A, B, C, D, and F are ignored for this "
-                               "application.\n");
-                }
+                if (((char)key >= 'A' && (char)key <= 'D') || (char)key == 'F')
+                    xil_printf("Keys A, B, C, D, and F are ignored for this application.\n");
+
                 // case when we consider input key strokes from '0' to '9'
-                // (only these are the valid key inputs for arithmetic
-                // operation)
-                else if ((char)key != 'E') {
+                // (only these are the valid key inputs for arithmetic operation)
+                else if ((char)key != 'E')
                     store_key = key;
-                }
-                // if user presses 'E' key, consider the last input key pressed
-                // as the operand
-                else if ((char)key == 'E') {
+                // if user presses 'E' key, consider the last input key pressed as the operand
+                else if ((char)key == 'E')
                     if (store_key != 'x') {
-                        xil_printf("Storing the operand %c to Queue...\n",
-                                   (char)store_key);
+                        xil_printf("Storing the operand %c to Queue...\n", (char)store_key);
                         store_key -= '0'; // turn into actual decimal value
                         key_stroke_on_SSD = SSD_decode(store_key, 0);
                         // display the digit on SSD stored as an operand.
                         XGpio_DiscreteWrite(&SSDInst, 1, key_stroke_on_SSD);
 
                         /****************************************/
-                        // Length of queue=2, hence we only store the key
-                        // pressed value in queue, when 'E' will be pressed.
-                        // here you write the Queue function to store the value
-                        // of the last key pressed before 'E' hint: a variable
-                        // is being used in this task that keeps the track of
-                        // this key value (key presses before 'E')
+                        // Length of queue=2, hence we only store the key pressed value in queue,
+                        // when 'E' will be pressed.  here you write the Queue function to store the
+                        // value of the last key pressed before 'E' hint: a variable is being used
+                        // in this task that keeps the track of this key value (key presses before
+                        // 'E')
                         /****************************************/
                         // they want a u32 so we have to send a u32 address
                         key_stroke_on_SSD = store_key;
                         xQueueSendToBack(xQueue, &key_stroke_on_SSD, 0UL);
                     }
-                }
             }
             // this is valid whenever two or more keys are pressed together
             else if (status == KYPD_MULTI_KEY && status != last_status)
@@ -250,6 +234,14 @@ static void prvTxTask(void *pvParameters) {
         }
     }
 }
+
+// violating what is syntactically valid C just so i can sneak in a debug statement
+#define doOperation(operation, operands, result)                                                   \
+    do {                                                                                           \
+        result = operands[0] operation operands[1];                                                \
+        xil_printf("Operation %d %s %d = %d\r\n", operands[0], #operation, operands[1], result);   \
+    } while (0)
+
 /*-----------------------------------------------------------*/
 static void prvRxTask(void *pvParameters) {
     UBaseType_t uxPriority = uxTaskPriorityGet(NULL);
@@ -260,38 +252,31 @@ static void prvRxTask(void *pvParameters) {
         int result = 0, valid = 0, first = 1, modulo_error = 0;
 
         /***************************************/
-        // write the code to read the queue values which store two operands for
-        // the calculation here. You may use operands[] for doing that or
-        // your wish of variable can be used too.
+        // write the code to read the queue values which store two operands for the calculation
+        // here. You may use operands[] for doing that or your wish of variable can be used too.
         /***************************************/
         xQueueReceive(xQueue, operands, 0UL);
         xQueueReceive(xQueue, operands + 1, 0UL);
-        xil_printf("Received numbers from queue:\r\n"
-                   "operands[0]: %d\r\n"
-                   "operands[1]: %d\r\n",
-                   operands[0], operands[1]);
 
         /***************************************/
-        // read the btn value here to check what user has pressed (^/|/&/%)
-        // and store it in say "btn_value" variable declared in this task
-        // For btn(3:0) --> "1000" is for %, "0100" is for &, "0010" is for
-        // | and "0001" is for ^
+        // read the btn value here to check what user has pressed (^/|/&/%) and store it in say
+        // "btn_value" variable declared in this task.
+        // For btn(3:0) --> "1000" is for %, "0100" is for &, "0010" is for | and "0001" is for ^
         /***************************************/
 
-        // keep the button pressed for your choice of the arithmetic/logical
-        // operation
+        // keep the button pressed for your choice of the arithmetic/logical operation
         while (!valid) {
             btn_value = XGpio_DiscreteRead(&BTNInst, 1);
             vTaskDelay(pdMS_TO_TICKS(100));
             switch (btn_value) {
             /* clang-format off */
-            case 1: result = operands[0] ^ operands[1]; valid = 1; break;
-            case 2: result = operands[0] | operands[1]; valid = 1; break;
-            case 4: result = operands[0] & operands[1]; valid = 1; break;
+            case 1: doOperation(^, operands, result); valid = 1; break;
+            case 2: doOperation(|, operands, result); valid = 1; break;
+            case 4: doOperation(&, operands, result); valid = 1; break;
             /* clang-format on */
             case 8:
                 if (operands[1])
-                    result = operands[0] % operands[1];
+                    doOperation(%, operands, result);
                 else {
                     xil_printf("Modulo division error!\r\n");
                     modulo_error = 1;
@@ -300,27 +285,24 @@ static void prvRxTask(void *pvParameters) {
                 break;
             default:
                 if (first) {
-                    xil_printf(
-                        "Invalid operator! Please select a valid operator by "
-                        "only pressing one button at a time.\r\n");
+                    xil_printf("Invalid operator! Please select a valid operator by only pressing "
+                               "one button at a time.\r\nWaiting for operation input...\r\n");
                     first = 0;
                 }
             }
         }
 
-        // Once the result is computed, we wish to display it on SSD
-        // the following logic is to extract the digits from the result. For
-        // example, 9x9=81 so we will first display 1 on right SSD and then 8 on
-        // the left SSD! please note that our operands are between 0 to 9 only.
-        // The result will never exceed a two-digit number in any case.
+        // Once the result is computed, we wish to display it on SSD the following logic is to
+        // extract the digits from the result. For example, 9x9=81 so we will first display 1 on
+        // right SSD and then 8 on the left SSD! please note that our operands are between 0 to 9
+        // only. The result will never exceed a two-digit number in any case.
 
         if (result < 0) xil_printf("Result is less than zero!!!\n");
-        // this delay is merely to introduce the visual difference
-        // between the input operands and the output result!
+        // this delay is merely to introduce the visual difference between the input operands and
+        // the output result!
         vTaskDelay(pdMS_TO_TICKS(1500));
 
         if (!modulo_error) {
-            xil_printf("Operation result = %d\n\n", result);
             u8 lsb = result % 10;
             u8 msb = result / 10;
             for (int i = 0; i < 100; ++i) {
@@ -340,8 +322,8 @@ static void prvRxTask(void *pvParameters) {
         XGpio_DiscreteWrite(&SSDInst, 1, 0b00000000);
         XGpio_DiscreteWrite(&SSDInst, 1, 0b10000000);
 
-        // we are now done doing the calculation so again go back to the task 1
-        // (TxTask) to get the new inputs!
+        // we are now done doing the calculation so again go back to the task 1 (TxTask) to get the
+        // new inputs!
         vTaskPrioritySet(xTxTask, (uxPriority + 1));
     }
 }

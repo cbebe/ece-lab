@@ -136,8 +136,8 @@ int main(void) {
 
     xil_printf("Initialization Complete, System Ready!\n");
 
-    xTaskCreate(prvTxTask, (const char *)"Tx", configMINIMAL_STACK_SIZE, NULL,
-                tskIDLE_PRIORITY, &xTxTask);
+    xTaskCreate(prvTxTask, (const char *)"Tx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY,
+                &xTxTask);
 
     // Initialize keypad with keytable
     KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
@@ -158,8 +158,7 @@ static void prvTxTask(void *pvParameters) {
         XStatus status, last_status = KYPD_NO_KEY;
         u8 new_key, current_key = 'x', previous_key = 'x';
 
-        // Initial value of last_key cannot be contained in loaded KEYTABLE
-        // string
+        // Initial value of last_key cannot be contained in loaded KEYTABLE string
         Xil_Out32(myDevice.GPIO_addr, 0xF);
 
         xil_printf("Pmod KYPD demo started. Press any key on the Keypad.\r\n");
@@ -172,8 +171,7 @@ static void prvTxTask(void *pvParameters) {
             status = KYPD_getKeyPressed(&myDevice, keystate, &new_key);
 
             // Print key detect if a new key is pressed or if status has changed
-            if (status == KYPD_SINGLE_KEY &&
-                (status != last_status || new_key != current_key)) {
+            if (status == KYPD_SINGLE_KEY && (status != last_status || new_key != current_key)) {
                 xil_printf("Key Pressed: %c\r\n", (char)new_key);
                 previous_key = current_key;
                 current_key = new_key;
