@@ -84,7 +84,7 @@ static QueueHandle_t xQueue = NULL;
         XGpio_SetDataDirection(ptr, 1, direction);                                                 \
     } while (0)
 
-// violating C syntax just so i can sneak in a debug statement
+// non-syntactic macro
 #define doOperation(operation, operands, result)                                                   \
     do {                                                                                           \
         result = operands[0] operation operands[1];                                                \

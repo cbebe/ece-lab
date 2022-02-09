@@ -68,19 +68,19 @@ int main(void) {
     xil_printf("*** We are here in the main function, HELLO! ***\r\n");
 
     /* Create the task. */
-    xTaskCreate(prvTxTask,          /* The function that implements the task. */
-                (const char *)"Tx", /* Text name for the task, provided to
-                                       assist debugging only. */
+    xTaskCreate(prvTxTask,                /* The function that implements the task. */
+                (const char *)"Tx",       /* Text name for the task, provided to
+                                             assist debugging only. */
                 configMINIMAL_STACK_SIZE, /* The stack allocated to the task. */
-                NULL, /* The task parameter is not used, so set to NULL. */
-                tskIDLE_PRIORITY, /* The task runs at the idle priority. */
+                NULL,                     /* The task parameter is not used, so set to NULL. */
+                tskIDLE_PRIORITY,         /* The task runs at the idle priority. */
                 &xTxTask);
 
     // The timer expiry is set to 5 seconds and the timer set to not auto
     // reload.
 
-    xTimer = xTimerCreate((const char *)"Timer", x5seconds, pdFALSE,
-                          (void *)TIMER_ID, vTimerCallback);
+    xTimer =
+        xTimerCreate((const char *)"Timer", x5seconds, pdFALSE, (void *)TIMER_ID, vTimerCallback);
     /* Check the timer was created. */
     configASSERT(xTimer);
 

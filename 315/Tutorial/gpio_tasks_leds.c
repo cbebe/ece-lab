@@ -69,13 +69,11 @@ int main(void) {
     // Set RGB LED direction to output
     XGpio_SetDataDirection(&RGBInst, 1, 0x00);
 
-    xil_printf(
-        "Initialization done for RGB led and LEDs ::: System Ready\r\n\n");
+    xil_printf("Initialization done for RGB led and LEDs ::: System Ready\r\n\n");
 
     // Create the Tasks
     xTaskCreate(Blue_Task, "Blue Task", 1000, (void *)pcTextForTask1, 3, NULL);
-    xTaskCreate(Yellow_Task, "Yellow Task", 1000, (void *)pcTextForTask2, 2,
-                NULL);
+    xTaskCreate(Yellow_Task, "Yellow Task", 1000, (void *)pcTextForTask2, 2, NULL);
 
     /* Start the scheduler to start the tasks executing. */
     vTaskStartScheduler();
