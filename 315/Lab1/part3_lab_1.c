@@ -83,16 +83,13 @@ XGpio RGBInst;
 #define MUL 'C'
 #define PAL 'D'
 
-// Non-syntactic macro
+// Non-syntactic macros
 #define doOperation(operation, operands)                                                           \
-    do {                                                                                           \
-        u32 result = operands[0] operation operands[1];                                            \
-        xil_printf("The operation %u %s %u ", operands[0], #operation, operands[1]);               \
-        if (result < 0)                                                                            \
-            xil_printf("results in an overflow!\r\n");                                             \
-        else                                                                                       \
-            xil_printf("= %u\r\n", result);                                                        \
-    } while (0)
+    xil_printf("The operation %u %s %u = %u\r\n", operands[0], #operation, operands[1],            \
+               operands[0] operation operands[1])
+#define printOverflow(operation, operands)                                                         \
+    xil_printf("The operation %u %s %u results in an overflow!\r\n", operands[0], #operation,      \
+               operands[1])
 
 // MAIN FUNCTION
 int main(void) {
@@ -235,6 +232,9 @@ static void prvTxTask(void *pvParameters) {
 
 // Valid operations
 static void checkPalindromes(u32 operands[]);
+static void doAddition(u32 operands[]);
+static void doSubtraction(u32 operands[]);
+static void doMultiplication(u32 operands[]);
 
 /*-----------------------------------------------------------*/
 static void prvRxTask(void *pvParameters) {
@@ -264,9 +264,9 @@ static void prvRxTask(void *pvParameters) {
         xQueueReceive(xQueue, &operator, 0UL);
         switch ((char)operator) {
             /* clang-format off */
-        case ADD: doOperation(+, operands); break;
-        case SUB: doOperation(-, operands); break;
-        case MUL: doOperation(*, operands); break;
+        case ADD: doAddition(operands); break;
+        case SUB: doSubtraction(operands); break;
+        case MUL: doMultiplication(operands); break;
         case PAL: checkPalindromes(operands); break;
         default: xil_printf("Invalid operation!\r\n"); // Something went wrong!
             /* clang-format on */
@@ -282,9 +282,8 @@ static u32 isPalindrome(u32 number) {
         value = value * 10 + (factor % 10);
         factor /= 10;
     }
-    u8 palindrome = value == number;
-    if (palindrome) xil_printf("%u is a palindrome!\r\n", number);
-    return palindrome;
+    if (value == number) xil_printf("%u is a palindrome!\r\n", number);
+    return value == number;
 }
 
 static void checkPalindromes(u32 operands[]) {
@@ -296,4 +295,26 @@ static void checkPalindromes(u32 operands[]) {
         vTaskDelay(xDelay1500ms);
         XGpio_DiscreteWrite(&RGBInst, 1, 0x00);
     }
+}
+
+static void doAddition(u32 operands[]) {
+    if (operands[0] > 0 && operands[1] > (UINT32_MAX - operands[0]))
+        printOverflow(+, operands);
+    else
+        doOperation(+, operands);
+}
+
+static void doSubtraction(u32 operands[]) {
+    if (operands[0] < operands[1])
+        printOverflow(-, operands);
+    else
+        doOperation(-, operands);
+}
+
+static void doMultiplication(u32 operands[]) {
+    u32 result = operands[0] * operands[1];
+    if (result / operands[0] != operands[1])
+        printOverflow(*, operands);
+    else
+        doOperation(*, operands);
 }
