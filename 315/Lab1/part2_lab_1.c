@@ -54,6 +54,7 @@ XGpio BTNInst, SSDInst;
 /* The Tx and Rx tasks as described at the top of this file. */
 static void prvTxTask(void *pvParameters);
 static void prvRxTask(void *pvParameters);
+static u32 SSD_decode(u8 key_value, u8 cathode);
 
 PmodKYPD myDevice;
 
@@ -69,6 +70,11 @@ static QueueHandle_t xQueue = NULL;
 #define INPUT_DIRECTION_MASK 0xFF
 #define NEGATIVE_SIGN 0xFF
 
+/* The maximum delay that prevents the SSD from flickering */
+#define SSD_MS_DELAY 15
+#define RIGHT_SSD 0
+#define LEFT_SSD 1
+
 #define initializeGPIO(ptr, deviceID, name, direction)                                             \
     do {                                                                                           \
         if (XGpio_Initialize(ptr, deviceID) != XST_SUCCESS) {                                      \
@@ -78,39 +84,12 @@ static QueueHandle_t xQueue = NULL;
         XGpio_SetDataDirection(ptr, 1, direction);                                                 \
     } while (0)
 
-// valid key press from 0-9 has already been encoded for you.
-u32 SSD_decode(u8 key_value, u8 cathode) {
-    /* clang-format off */
-    switch (key_value) {
-    case 0:  if (cathode == 0) return 0b00111111; else return 0b10111111;
-    case 1:  if (cathode == 0) return 0b00000110; else return 0b10000110;
-    case 2:  if (cathode == 0) return 0b01011011; else return 0b11011011;
-    case 3:  if (cathode == 0) return 0b01001111; else return 0b11001111;
-    case 4:  if (cathode == 0) return 0b01100110; else return 0b11100110;
-    case 5:  if (cathode == 0) return 0b01101101; else return 0b11101101;
-    case 6:  if (cathode == 0) return 0b01111101; else return 0b11111101;
-    case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
-    case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
-    case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
-    case NEGATIVE_SIGN: return 0b11000000;
-    default: if (cathode == 0) return 0b00000000; else return 0b00000000;
-    }
-    /* clang-format on */
-}
-
-/* The maximum delay that prevents the SSD from flickering */
-#define SSD_MS_DELAY 15
-#define RIGHT_SSD 0
-#define LEFT_SSD 1
-
-/**
- * Decode the keypad code and display the key into the given SSD
- * Also adds the delay SSD_MS_DELAY
- */
-static inline void showKey(u8 key, u8 ssd) {
-    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
-    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
-}
+// violating C syntax just so i can sneak in a debug statement
+#define doOperation(operation, operands, result)                                                   \
+    do {                                                                                           \
+        result = operands[0] operation operands[1];                                                \
+        xil_printf("Operation %d %s %d = %d\r\n", operands[0], #operation, operands[1], result);   \
+    } while (0)
 
 // MAIN FUNCTION
 int main(void) {
@@ -122,13 +101,8 @@ int main(void) {
     // Create the two tasks.  The Tx task is given a higher priority than the Rx task. Dynamically
     // changing the priority of Rx Task later on so the Rx task will leave the Blocked state and
     // preempt the Tx task as soon as the Tx task fills the queue.
-    xTaskCreate(prvTxTask,          /* The function that implements the task. */
-                (const char *)"Tx", /* Text name for the task, provided to assist debugging only. */
-                configMINIMAL_STACK_SIZE, /* The stack allocated to the task. */
-                NULL,                     /* The task parameter is not used, so set to NULL. */
-                tskIDLE_PRIORITY + 2,     /* The task runs at the idle priority. */
+    xTaskCreate(prvTxTask, (const char *)"Tx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2,
                 &xTxTask);
-
     xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
                 &xRxTask);
     // There are only two spaces in the queue. Each space in the queue is large enough to hold a
@@ -167,16 +141,14 @@ static void prvTxTask(void *pvParameters) {
         uxPriority = uxTaskPriorityGet(NULL);
 
         while (1) {
-            if (uxQueueMessagesWaiting(xQueue) == 2) {
-                /*********************************/
-                // enter the function to dynamically change the priority when queue is full. This
-                // way when the queue is full here, we change the priority of this task. and hence
-                // queue will be read in the receive task to perform the operation. If you change
-                // the priority here dynamically, make sure in the receive task to do the counter
-                // part!!!
-                /*********************************/
-                vTaskPrioritySet(NULL, uxPriority - 2);
-            }
+            /*********************************/
+            // enter the function to dynamically change the priority when queue is full. This
+            // way when the queue is full here, we change the priority of this task. and hence
+            // queue will be read in the receive task to perform the operation. If you change
+            // the priority here dynamically, make sure in the receive task to do the counter
+            // part!!!
+            /*********************************/
+            if (uxQueueMessagesWaiting(xQueue) == 2) vTaskPrioritySet(NULL, uxPriority - 2);
 
             /*******************************************/
             // write one line of code to capture the state of each key here.
@@ -235,12 +207,14 @@ static void prvTxTask(void *pvParameters) {
     }
 }
 
-// violating what is syntactically valid C just so i can sneak in a debug statement
-#define doOperation(operation, operands, result)                                                   \
-    do {                                                                                           \
-        result = operands[0] operation operands[1];                                                \
-        xil_printf("Operation %d %s %d = %d\r\n", operands[0], #operation, operands[1], result);   \
-    } while (0)
+/**
+ * Decode the keypad code and display the key into the given SSD
+ * Also adds the delay SSD_MS_DELAY
+ */
+static inline void showKey(u8 key, u8 ssd) {
+    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
+    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
+}
 
 /*-----------------------------------------------------------*/
 static void prvRxTask(void *pvParameters) {
@@ -326,4 +300,24 @@ static void prvRxTask(void *pvParameters) {
         // new inputs!
         vTaskPrioritySet(xTxTask, (uxPriority + 1));
     }
+}
+
+// valid key press from 0-9 has already been encoded for you.
+static u32 SSD_decode(u8 key_value, u8 cathode) {
+    /* clang-format off */
+    switch (key_value) {
+    case 0:  if (cathode == 0) return 0b00111111; else return 0b10111111;
+    case 1:  if (cathode == 0) return 0b00000110; else return 0b10000110;
+    case 2:  if (cathode == 0) return 0b01011011; else return 0b11011011;
+    case 3:  if (cathode == 0) return 0b01001111; else return 0b11001111;
+    case 4:  if (cathode == 0) return 0b01100110; else return 0b11100110;
+    case 5:  if (cathode == 0) return 0b01101101; else return 0b11101101;
+    case 6:  if (cathode == 0) return 0b01111101; else return 0b11111101;
+    case 7:  if (cathode == 0) return 0b00000111; else return 0b10000111;
+    case 8:  if (cathode == 0) return 0b01111111; else return 0b11111111;
+    case 9:  if (cathode == 0) return 0b01101111; else return 0b11101111;
+    case NEGATIVE_SIGN: return 0b11000000;
+    default: if (cathode == 0) return 0b00000000; else return 0b00000000;
+    }
+    /* clang-format on */
 }

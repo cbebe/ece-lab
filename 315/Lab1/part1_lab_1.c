@@ -58,8 +58,18 @@
 #define LEFT_SSD 1
 #define OUTPUT_DIRECTION_MASK 0x00
 
+// keytable is determined as follows (indices shown in Keypad position below)
+// 12 13 14 15
+// 8  9  10 11
+// 4  5  6  7
+// 0  1  2  3
+#define DEFAULT_KEYTABLE "0FED789C456B123A"
+
 // Button Variable
 XGpio SSDInst, KYPDInst;
+
+/* The Tx described at the top of this file. */
+static void prvTxTask(void *pvParameters);
 
 /**
  * This function is hard coded to display the seven segment bits for two cases
@@ -73,54 +83,19 @@ XGpio SSDInst, KYPDInst;
  * show that segment do not lit up for any other letters than 0 to F or during
  * the start of the application.
  */
-u32 SSD_decode(u8 key_value, u8 cathode) {
-    /* clang-format off */
-    switch(key_value) {
-        case '0': if (cathode == 0) return 0b00111111; else return 0b10111111;
-        case '1': if (cathode == 0) return 0b00000110; else return 0b10000110;
-        case '2': if (cathode == 0) return 0b01011011; else return 0b11011011;
-        case '3': if (cathode == 0) return 0b01001111; else return 0b11001111;
-        case '4': if (cathode == 0) return 0b01100110; else return 0b11100110;
-        case '5': if (cathode == 0) return 0b01101101; else return 0b11101101;
-        case '6': if (cathode == 0) return 0b01111101; else return 0b11111101;
-        case '7': if (cathode == 0) return 0b00000111; else return 0b10000111;
-        case '8': if (cathode == 0) return 0b01111111; else return 0b11111111;
-        case '9': if (cathode == 0) return 0b01101111; else return 0b11101111;
-        case 'A': if (cathode == 0) return 0b01110111; else return 0b11110111;
-        case 'B': if (cathode == 0) return 0b01111100; else return 0b11111100;
-        case 'C': if (cathode == 0) return 0b00111001; else return 0b10111001;
-        case 'D': if (cathode == 0) return 0b01011110; else return 0b11011110;
-        case 'E': if (cathode == 0) return 0b01111001; else return 0b11111001;
-        case 'F': if (cathode == 0) return 0b01110001; else return 0b11110001;
-        default:  if (cathode == 0) return 0b00000000; else return 0b00000000;
-    }
-    /* clang-format on */
-}
+static u32 SSD_decode(u8 key_value, u8 cathode);
 
 /**
  * Decode the keypad code and display the key into the given SSD
  * Also adds the delay SSD_MS_DELAY
  */
-static inline void showKey(u8 key, u8 ssd) {
-    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
-    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
-}
-
-/* The Tx described at the top of this file. */
-static void prvTxTask(void *pvParameters);
+static inline void showKey(u8 key, u8 ssd);
 
 PmodKYPD myDevice;
 
 /*-----------------------------------------------------------*/
 
 static TaskHandle_t xTxTask;
-
-// keytable is determined as follows (indices shown in Keypad position below)
-// 12 13 14 15
-// 8  9  10 11
-// 4  5  6  7
-// 0  1  2  3
-#define DEFAULT_KEYTABLE "0FED789C456B123A"
 
 // MAIN FUNCTION
 int main(void) {
@@ -188,3 +163,32 @@ static void prvTxTask(void *pvParameters) {
     }
 }
 /*-----------------------------------------------------------*/
+
+static u32 SSD_decode(u8 key_value, u8 cathode) {
+    /* clang-format off */
+    switch(key_value) {
+        case '0': if (cathode == 0) return 0b00111111; else return 0b10111111;
+        case '1': if (cathode == 0) return 0b00000110; else return 0b10000110;
+        case '2': if (cathode == 0) return 0b01011011; else return 0b11011011;
+        case '3': if (cathode == 0) return 0b01001111; else return 0b11001111;
+        case '4': if (cathode == 0) return 0b01100110; else return 0b11100110;
+        case '5': if (cathode == 0) return 0b01101101; else return 0b11101101;
+        case '6': if (cathode == 0) return 0b01111101; else return 0b11111101;
+        case '7': if (cathode == 0) return 0b00000111; else return 0b10000111;
+        case '8': if (cathode == 0) return 0b01111111; else return 0b11111111;
+        case '9': if (cathode == 0) return 0b01101111; else return 0b11101111;
+        case 'A': if (cathode == 0) return 0b01110111; else return 0b11110111;
+        case 'B': if (cathode == 0) return 0b01111100; else return 0b11111100;
+        case 'C': if (cathode == 0) return 0b00111001; else return 0b10111001;
+        case 'D': if (cathode == 0) return 0b01011110; else return 0b11011110;
+        case 'E': if (cathode == 0) return 0b01111001; else return 0b11111001;
+        case 'F': if (cathode == 0) return 0b01110001; else return 0b11110001;
+        default:  if (cathode == 0) return 0b00000000; else return 0b00000000;
+    }
+    /* clang-format on */
+}
+
+static inline void showKey(u8 key, u8 ssd) {
+    XGpio_DiscreteWrite(&SSDInst, 1, SSD_decode(key, ssd));
+    vTaskDelay(pdMS_TO_TICKS(SSD_MS_DELAY));
+}
