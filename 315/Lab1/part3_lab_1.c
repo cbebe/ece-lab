@@ -60,7 +60,6 @@
 static void prvTxTask(void *pvParameters);
 static void prvRxTask(void *pvParameters);
 
-void DemoInitialize();
 u32 SSD_decode(u8 key_value, u8 cathode);
 
 PmodKYPD myDevice;
@@ -79,10 +78,21 @@ XGpio RGBInst;
 
 #define WHITE_IN_RGB 7
 
-void DemoInitialize() {
-    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
-    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
-}
+#define ADD 'A'
+#define SUB 'B'
+#define MUL 'C'
+#define PAL 'D'
+
+// Non-syntactic macro
+#define doOperation(operation, operands)                                                           \
+    do {                                                                                           \
+        u32 result = operands[0] operation operands[1];                                            \
+        xil_printf("The operation %u %s %u ", operands[0], #operation, operands[1]);               \
+        if (result < 0)                                                                            \
+            xil_printf("results in an overflow!\r\n");                                             \
+        else                                                                                       \
+            xil_printf("= %u\r\n", result);                                                        \
+    } while (0)
 
 // MAIN FUNCTION
 int main(void) {
@@ -103,14 +113,8 @@ int main(void) {
     /* Create the two tasks.  The Tx task is given a higher priority than the Rx task. Dynamically
      * changing the priority of Rx Task later on so the Rx task will leave the Blocked state and
      * pre-empt the Tx task as soon as the Tx task fills the queue. */
-
-    xTaskCreate(prvTxTask,          // The function that implements the task.
-                (const char *)"Tx", // Text name for the task, provided to assist debugging only.
-                configMINIMAL_STACK_SIZE, // The stack allocated to the task.
-                NULL,                     // The task parameter is not used, so set to NULL.
-                tskIDLE_PRIORITY + 2,     // The task runs at the idle priority.
+    xTaskCreate(prvTxTask, (const char *)"Tx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 2,
                 &xTxTask);
-
     xTaskCreate(prvRxTask, (const char *)"Rx", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
                 &xRxTask);
 
@@ -118,14 +122,14 @@ int main(void) {
      * There are three items in the queue, two operands and then operation using keypad
      * Each space in the queue is large enough to hold a uint32_t.
      */
-    xQueue = xQueueCreate(3,
-
-                          sizeof(unsigned int));
+    xQueue = xQueueCreate(3, sizeof(unsigned int));
 
     /* Check the queue was created. */
     configASSERT(xQueue);
 
-    DemoInitialize();
+    // Initialize keypad
+    KYPD_begin(&myDevice, XPAR_AXI_GPIO_PMOD_KEYPAD_BASEADDR);
+    KYPD_loadKeyTable(&myDevice, (u8 *)DEFAULT_KEYTABLE);
 
     vTaskStartScheduler();
 
@@ -140,10 +144,9 @@ static void prvTxTask(void *pvParameters) {
     UBaseType_t uxPriority;
 
     for (;;) {
-        u16 keystate;
         XStatus status, last_status = KYPD_NO_KEY;
         u8 key, last_key = 'x';
-        u32 factor = 0, current_value = 0;
+        u32 factor = 0, current_value = 0, old_value;
 
         Xil_Out32(myDevice.GPIO_addr, 0xF);
         xil_printf("PMOD KYPD demo started. Press any key on the Keypad.\r\n");
@@ -152,25 +155,17 @@ static void prvTxTask(void *pvParameters) {
 
         while (1) {
 
-            // Capture state of each key
-            keystate = KYPD_getKeyStates(&myDevice);
+            // Capture state of each key and determine which single key is pressed, if any
+            status = KYPD_getKeyPressed(&myDevice, KYPD_getKeyStates(&myDevice), &key);
 
-            // Determine which single key is pressed, if any
-            status = KYPD_getKeyPressed(&myDevice, keystate, &key);
-
-            // this functions returns the number of entries in the queue, so when the queue is full,
-            // i.e., 2 entries, decreased the priority of this task and hence receive task will
-            // immediately start to execute.
-            if (uxQueueMessagesWaiting(xQueue) == 3) {
-
-                /*********************************/
-                // enter the function to dynamically change the priority when queue is full.This way
-                // when the queue is full here, we change the priority of this task and hence queue
-                // will be read in the receive task to perform the operation.If you change the
-                // priority here dynamically, make sure in the receive task to do the counter part
-                // !!!
-                /*********************************/
-            }
+            /*********************************/
+            // enter the function to dynamically change the priority when queue is full.This way
+            // when the queue is full here, we change the priority of this task and hence queue
+            // will be read in the receive task to perform the operation.If you change the
+            // priority here dynamically, make sure in the receive task to do the counter part
+            // !!!
+            /*********************************/
+            if (uxQueueMessagesWaiting(xQueue) == 3) vTaskPrioritySet(NULL, uxPriority - 2);
 
             // Print key detect if a new key is pressed or if status has changed
             if (status == KYPD_SINGLE_KEY && (status != last_status || key != last_key)) {
@@ -179,22 +174,26 @@ static void prvTxTask(void *pvParameters) {
 
                 // whenever 'F' is pressed, the aggregated number will be registered as an operand
                 if ((char)key == 'F') {
-                    xil_printf("Final current_value of operand= %d\n", current_value);
-
                     /*******************************/
                     // write the logic to enter the updated variable here to the Queue
                     /*******************************/
-
-                    current_value = 0;
+                    if (uxQueueMessagesWaiting(xQueue) == 2)
+                        xil_printf(
+                            "2 operands are already in the queue. Please select an operation.\r\n");
+                    else {
+                        xil_printf("Final current_value of operand= %u\n", current_value);
+                        xQueueSendToBack(xQueue, &current_value, 0UL);
+                        current_value = 0;
+                        if (uxQueueMessagesWaiting(xQueue) == 2)
+                            xil_printf("Please select an operation.\r\n");
+                    }
                 }
                 // if 'E' is pressed, it resets the current value of the operand and allows the user
                 // to enter a new value
                 else if ((char)key == 'E') {
                     xil_printf("current_value of operand has been reset. "
                                "Please enter the new value.\n");
-
-                    factor = 0;
-                    current_value = 0;
+                    factor = current_value = 0;
                 }
                 // case when we consider input key strokes from '0' to '9' (only these are the valid
                 // key inputs for all the four operations) the current_value is aggregated as the
@@ -202,18 +201,25 @@ static void prvTxTask(void *pvParameters) {
                 // this order 4 > 5 > 8  => current_value will end up being 458
                 else if (key >= '0' && key <= '9') {
                     factor = (int)(key - '0');
+                    old_value = current_value;
                     current_value = current_value * 10 + factor;
-                    xil_printf("current_value = %d\n", current_value);
+                    xil_printf("current_value = %u\n", current_value);
+                    // Handle overflow here before sending to the queue
+                    if (current_value % 10 != factor || current_value / 10 != old_value) {
+                        xil_printf("Overflow detected! Resetting input...\r\n");
+                        factor = current_value = 0;
+                        xil_printf("current_value = %u\n", current_value);
+                    }
                 } else if ((uxQueueMessagesWaiting(xQueue) == 2) &&
-                           ((char)key == 'A' || (char)key == 'B' || (char)key == 'C' ||
-                            (char)key == 'D')) {
-
+                           ((char)key == ADD || (char)key == SUB || (char)key == MUL ||
+                            (char)key == PAL)) {
                     /*****************************************/
                     // once two operands are in the queue, enter the third value to the queue to
                     // indicate the operation to be performed using A,B,C or D key store the current
                     // key value to the queue as the third element
                     /*****************************************/
-
+                    current_value = (u32)key;
+                    xQueueSendToBack(xQueue, &current_value, 0UL);
                     current_value = 0;
                 }
             }
@@ -226,15 +232,17 @@ static void prvTxTask(void *pvParameters) {
         }
     }
 }
+
+// Valid operations
+static void checkPalindromes(u32 operands[]);
+
 /*-----------------------------------------------------------*/
 static void prvRxTask(void *pvParameters) {
     UBaseType_t uxPriority;
     uxPriority = uxTaskPriorityGet(NULL);
 
-    const TickType_t xDelay1500ms = pdMS_TO_TICKS(1500UL);
-
     for (;;) {
-
+        u32 operands[2], operator;
         /***************************************/
         // ...Write code here to read the three elements from the queue and perform the required
         // operation.
@@ -251,5 +259,41 @@ static void prvRxTask(void *pvParameters) {
         // ...For RGB led, look at the function that was used in previous labs for writing the value
         // to the led. Initialization and color definition is already provided to you in this file.
         /***************************************/
+        xQueueReceive(xQueue, operands, 0UL);
+        xQueueReceive(xQueue, operands + 1, 0UL);
+        xQueueReceive(xQueue, &operator, 0UL);
+        switch ((char)operator) {
+            /* clang-format off */
+        case ADD: doOperation(+, operands); break;
+        case SUB: doOperation(-, operands); break;
+        case MUL: doOperation(*, operands); break;
+        case PAL: checkPalindromes(operands); break;
+        default: xil_printf("Invalid operation!\r\n"); // Something went wrong!
+            /* clang-format on */
+        }
+        xil_printf("Operation done.\r\n");
+        vTaskPrioritySet(xTxTask, (uxPriority + 1));
+    }
+}
+
+static u32 isPalindrome(u32 number) {
+    u32 value = 0, factor = number;
+    while (factor > 0) {
+        value = value * 10 + (factor % 10);
+        factor /= 10;
+    }
+    u8 palindrome = value == number;
+    if (palindrome) xil_printf("%u is a palindrome!\r\n", number);
+    return palindrome;
+}
+
+static void checkPalindromes(u32 operands[]) {
+    const TickType_t xDelay1500ms = pdMS_TO_TICKS(1500UL);
+    if (isPalindrome(operands[0]) && isPalindrome(operands[1])) {
+        xil_printf("%u and %u are both palindromes! Here's a blinding white light.\r\n",
+                   operands[0], operands[1]);
+        XGpio_DiscreteWrite(&RGBInst, 1, 0x07);
+        vTaskDelay(xDelay1500ms);
+        XGpio_DiscreteWrite(&RGBInst, 1, 0x00);
     }
 }
