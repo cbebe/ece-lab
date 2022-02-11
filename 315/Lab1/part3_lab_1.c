@@ -282,7 +282,9 @@ static u32 isPalindrome(u32 number) {
         value = value * 10 + (factor % 10);
         factor /= 10;
     }
-    if (value == number) xil_printf("%u is a palindrome!\r\n", number);
+    xil_printf("%u is ", number);
+    if (value != number) xil_printf("not ");
+    xil_printf("a palindrome!\r\n");
     return value == number;
 }
 
@@ -318,3 +320,4 @@ static void doMultiplication(u32 operands[]) {
     else
         doOperation(*, operands);
 }
+
