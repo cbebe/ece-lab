@@ -171,11 +171,11 @@ static inline void handleKey(u8 key, u32 *currentValuePtr) {
         xil_printf("current_value of operand has been reset. "
                    "Please enter the new value.\n");
     } else if (key >= '0' && key <= '9')
-        *currentValuePtr = aggregateValue(currentValuePtr, key);
+        *currentValuePtr = aggregateValue(*currentValuePtr, key);
     /* Send the operator to the queue for the Rx task to process */
     else if ((uxQueueMessagesWaiting(xQueue) == 2) && isOperator((char)key)) {
         *currentValuePtr = (u32)key;
-        xQueueSendToBack(xQueue, &currentValuePtr, 0UL);
+        xQueueSendToBack(xQueue, currentValuePtr, 0UL);
         *currentValuePtr = 0;
     }
 }
@@ -256,9 +256,9 @@ static void prvRxTask(void *pvParameters) {
  * @brief Checks if a number is a palindrome
  *
  * @param number number to check
- * @return u32 1 if the number is a palindrome, 0 if not
+ * @return u8 1 if the number is a palindrome, 0 if not
  */
-static u32 isPalindrome(u32 number) {
+static u8 isPalindrome(u32 number) {
     u32 value = 0, factor = number;
     while (factor > 0) {
         value = value * 10 + (factor % 10);
@@ -272,7 +272,9 @@ static u32 isPalindrome(u32 number) {
 
 static void checkPalindromes(u32 operands[]) {
     const TickType_t xDelay1500ms = pdMS_TO_TICKS(1500UL);
-    if (isPalindrome(operands[0]) && isPalindrome(operands[1])) {
+    u8 isFirstPalindrome = isPalindrome(operands[0]);
+    u8 isSecondPalindrome = isPalindrome(operands[1]);
+    if (isFirstPalindrome && isSecondPalindrome) {
         xil_printf("%u and %u are both palindromes! Here's a blinding white light.\r\n",
                    operands[0], operands[1]);
         XGpio_DiscreteWrite(&RGBInst, 1, WHITE_IN_RGB);
