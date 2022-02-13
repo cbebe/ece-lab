@@ -222,7 +222,7 @@ static void prvTxTask(void *pvParameters) {
 static void checkPalindromes(u32 operands[]);
 
 /* Functions to check for various types of overflow */
-static u8 isAddOverflow(u32 ops[]) { return (ops[0] > 0 && ops[1] > (UINT32_MAX - ops[0])); }
+static u8 isAddOverflow(u32 ops[]) { return (ops[1] > (UINT32_MAX - ops[0])); }
 static u8 isSubOverflow(u32 ops[]) { return ops[0] < ops[1]; }
 static u8 isMulOverflow(u32 ops[]) { return (ops[0] * ops[1]) / ops[0] != ops[1]; }
 
