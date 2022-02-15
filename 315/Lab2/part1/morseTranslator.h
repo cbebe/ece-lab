@@ -67,9 +67,9 @@ Unknown character can be represented by * (starlike symbol)
 -> Characters will be separated by | symbol
 
 Example:
-			.--|.|.-..|-.-.|---|--|.| .|...-|.|.-.|-.--|---|-.|.|.-.-.-|
+            .--|.|.-..|-.-.|---|--|.| .|...-|.|.-.|-.--|---|-.|.|.-.-.-|
 
-			WELCOME EVERYONE.
+            WELCOME EVERYONE.
 
 */
 
@@ -78,254 +78,71 @@ extern char output_text_sequence[500];
 extern int output_length;
 extern int char_seq_length;
 
+#define strMatch(str) strcmp(char_morse_sequence, str) == 0
 
-void morseToTextConverter(char morse_char){
+#define addChar(ch) output_text_sequence[output_length++] = ch;
 
-	if(morse_char == '.' || morse_char == '-'){
-		char_morse_sequence[char_seq_length++] = morse_char;
-	}
+void morseToTextConverter(char morse_char) {
+    /* clang-format off */
+    if (morse_char == '.' || morse_char == '-') 
+        char_morse_sequence[char_seq_length++] = morse_char;
 
-	//a space will be kept the same
-	else if(morse_char == ' '){
-		output_text_sequence[output_length++] = ' ';
-	}
+    // a space will be kept the same
+    else if (morse_char == ' ') addChar(' ');
+    // $ sign entered by the user will indicate a new line
+    else if (morse_char == '\r') addChar('\r');
+    // if a character delimiter is detected
+    else if (morse_char == '|') {
+        if (strMatch(".-")) addChar('A'); // letter A
+        else if (strMatch("-...")) addChar('B'); // letter B
+        else if (strMatch("-.-.")) addChar('C'); // letter C
+        else if (strMatch("-..")) addChar('D'); // letter D
+        else if (strMatch(".")) addChar('E'); // letter E
+        else if (strMatch("..-.")) addChar('F'); // letter F
+        else if (strMatch("--.")) addChar('G'); // letter G
+        else if (strMatch("....")) addChar('H'); // letter H
+        else if (strMatch("..")) addChar('I'); // letter I
+        else if (strMatch(".---")) addChar('J'); // letter J
+        else if (strMatch("-.-")) addChar('K'); // letter K
+        else if (strMatch(".-..")) addChar('L'); // letter L
+        else if (strMatch("--")) addChar('M'); // letter M
+        else if (strMatch("-.")) addChar('N'); // letter N
+        else if (strMatch("---")) addChar('O'); // letter O
+        else if (strMatch(".--.")) addChar('P'); // letter P
+        else if (strMatch("--.-")) addChar('Q'); // letter Q
+        else if (strMatch(".-.")) addChar('R'); // letter R
+        else if (strMatch("...")) addChar('S'); // letter S
+        else if (strMatch("-")) addChar('T'); // letter T
+        else if (strMatch("..-")) addChar('U'); // letter U
+        else if (strMatch("...-")) addChar('V'); // letter V
+        else if (strMatch(".--")) addChar('W'); // letter W
+        else if (strMatch("-..-")) addChar('X'); // letter X
+        else if (strMatch("-.--")) addChar('Y'); // letter Y
+        else if (strMatch("--..")) addChar('Z'); // letter Z
+        else if (strMatch(".----")) addChar('1'); // number 1
+        else if (strMatch("..---")) addChar('2'); // number 2
+        else if (strMatch("...--")) addChar('3'); // number 3
+        else if (strMatch("....-")) addChar('4'); // number 4
+        else if (strMatch(".....")) addChar('5'); // number 5
+        else if (strMatch("-....")) addChar('6'); // number 6
+        else if (strMatch("--...")) addChar('7'); // number 7
+        else if (strMatch("---..")) addChar('8'); // number 8
+        else if (strMatch("----.")) addChar('9'); // number 9
+        else if (strMatch("-----")) addChar('0'); // number 0
+        else if (strMatch("--..--")) addChar(','); // comma ',"
+        else if (strMatch(".-.-.-")) addChar('.'); // period '.'
+        else if (strMatch("..--..")) addChar('?'); // question mark '?'
+        else if (strMatch(".--.-.")) addChar('@'); // @ symbol
+        else if (strMatch("---...")) addChar(':'); // colon :
+        else if (strMatch("-.-.-.")) addChar(';'); // semicolon ;
+        else if (strMatch("-....-")) addChar('-'); // dash -
+        else if (strMatch(".----.")) addChar('\''); // apostrophe '
+        else addChar('*'); // unknown character is represented by *
+        /* clang-format on */
 
-	//$ sign entered by the user will indicate a new line
-	else if(morse_char == '\r'){
-		output_text_sequence[output_length++] = '\r';
-	}
-
-	//if a character delimiter is detected
-	else if(morse_char == '|' ){
-
-		//letter A
-		if(strcmp(char_morse_sequence, ".-") == 0){
-			output_text_sequence[output_length++] = 'A';
-		}
-
-		//letter B
-		else if(strcmp(char_morse_sequence, "-...") == 0){
-			output_text_sequence[output_length++] = 'B';
-		}
-
-		//letter C
-		else if(strcmp(char_morse_sequence, "-.-.") == 0){
-			output_text_sequence[output_length++] = 'C';
-		}
-
-		//letter D
-		else if(strcmp(char_morse_sequence, "-..") == 0){
-			output_text_sequence[output_length++] = 'D';
-		}
-
-		//letter E
-		else if(strcmp(char_morse_sequence, ".") == 0){
-			output_text_sequence[output_length++] = 'E';
-		}
-
-		//letter F
-		else if(strcmp(char_morse_sequence, "..-.") == 0){
-			output_text_sequence[output_length++] = 'F';
-		}
-
-		//letter G
-		else if(strcmp(char_morse_sequence, "--.") == 0){
-			output_text_sequence[output_length++] = 'G';
-		}
-
-		//letter H
-		else if(strcmp(char_morse_sequence, "....") == 0){
-			output_text_sequence[output_length++] = 'H';
-		}
-
-		//letter I
-		else if(strcmp(char_morse_sequence, "..") == 0){
-			output_text_sequence[output_length++] = 'I';
-		}
-
-		//letter J
-		else if(strcmp(char_morse_sequence, ".---") == 0){
-			output_text_sequence[output_length++] = 'J';
-		}
-
-		//letter K
-		else if(strcmp(char_morse_sequence, "-.-") == 0){
-			output_text_sequence[output_length++] = 'K';
-		}
-
-		//letter L
-		else if(strcmp(char_morse_sequence, ".-..") == 0){
-			output_text_sequence[output_length++] = 'L';
-		}
-
-		//letter M
-		else if(strcmp(char_morse_sequence, "--") == 0){
-			output_text_sequence[output_length++] = 'M';
-		}
-
-		//letter N
-		else if(strcmp(char_morse_sequence, "-.") == 0){
-			output_text_sequence[output_length++] = 'N';
-		}
-
-		//letter O
-		else if(strcmp(char_morse_sequence, "---") == 0){
-			output_text_sequence[output_length++] = 'O';
-		}
-
-		//letter P
-		else if(strcmp(char_morse_sequence, ".--.") == 0){
-			output_text_sequence[output_length++] = 'P';
-		}
-
-		//letter Q
-		else if(strcmp(char_morse_sequence, "--.-") == 0){
-			output_text_sequence[output_length++] = 'Q';
-		}
-
-		//letter R
-		else if(strcmp(char_morse_sequence, ".-.") == 0){
-			output_text_sequence[output_length++] = 'R';
-		}
-
-		//letter S
-		else if(strcmp(char_morse_sequence, "...") == 0){
-			output_text_sequence[output_length++] = 'S';
-		}
-
-		//letter T
-		else if(strcmp(char_morse_sequence, "-") == 0){
-			output_text_sequence[output_length++] = 'T';
-		}
-
-		//letter U
-		else if(strcmp(char_morse_sequence, "..-") == 0){
-			output_text_sequence[output_length++] = 'U';
-		}
-
-		//letter V
-		else if(strcmp(char_morse_sequence, "...-") == 0){
-			output_text_sequence[output_length++] = 'V';
-		}
-
-		//letter W
-		else if(strcmp(char_morse_sequence, ".--") == 0){
-			output_text_sequence[output_length++] = 'W';
-		}
-
-		//letter X
-		else if(strcmp(char_morse_sequence, "-..-") == 0){
-			output_text_sequence[output_length++] = 'X';
-		}
-
-		//letter Y
-		else if(strcmp(char_morse_sequence, "-.--") == 0){
-			output_text_sequence[output_length++] = 'Y';
-		}
-
-		//letter Z
-		else if(strcmp(char_morse_sequence, "--..") == 0){
-			output_text_sequence[output_length++] = 'Z';
-		}
-
-		//number 1
-		else if(strcmp(char_morse_sequence, ".----") == 0){
-			output_text_sequence[output_length++] = '1';
-		}
-
-		//number 2
-		else if(strcmp(char_morse_sequence, "..---") == 0){
-			output_text_sequence[output_length++] = '2';
-		}
-
-		//number 3
-		else if(strcmp(char_morse_sequence, "...--") == 0){
-			output_text_sequence[output_length++] = '3';
-		}
-
-		//number 4
-		else if(strcmp(char_morse_sequence, "....-") == 0){
-			output_text_sequence[output_length++] = '4';
-		}
-
-		//number 5
-		else if(strcmp(char_morse_sequence, ".....") == 0){
-			output_text_sequence[output_length++] = '5';
-		}
-
-		//number 6
-		else if(strcmp(char_morse_sequence, "-....") == 0){
-			output_text_sequence[output_length++] = '6';
-		}
-
-		//number 7
-		else if(strcmp(char_morse_sequence, "--...") == 0){
-			output_text_sequence[output_length++] = '7';
-		}
-
-		//number 8
-		else if(strcmp(char_morse_sequence, "---..") == 0){
-			output_text_sequence[output_length++] = '8';
-		}
-
-		//number 9
-		else if(strcmp(char_morse_sequence, "----.") == 0){
-			output_text_sequence[output_length++] = '9';
-		}
-
-		//number 0
-		else if(strcmp(char_morse_sequence, "-----") == 0){
-			output_text_sequence[output_length++] = '0';
-		}
-
-		//comma ',"
-		else if(strcmp(char_morse_sequence, "--..--") == 0){
-			output_text_sequence[output_length++] = ',';
-		}
-
-		//period '.'
-		else if(strcmp(char_morse_sequence, ".-.-.-") == 0){
-			output_text_sequence[output_length++] = '.';
-		}
-
-		//question mark '?'
-		else if(strcmp(char_morse_sequence, "..--..") == 0){
-			output_text_sequence[output_length++] = '?';
-		}
-
-		//@ symbol
-		else if(strcmp(char_morse_sequence, ".--.-.") == 0){
-			output_text_sequence[output_length++] = '@';
-		}
-
-		//colon :
-		else if(strcmp(char_morse_sequence, "---...") == 0){
-			output_text_sequence[output_length++] = ':';
-		}
-
-		//semicolon ;
-		else if(strcmp(char_morse_sequence, "-.-.-.") == 0){
-			output_text_sequence[output_length++] = ';';
-		}
-
-		//dash -
-		else if(strcmp(char_morse_sequence, "-....-") == 0){
-			output_text_sequence[output_length++] = '-';
-		}
-
-		//apostrophe '
-		else if(strcmp(char_morse_sequence, ".----.") == 0){
-			output_text_sequence[output_length++] = '\'';
-		}
-
-		//unknown character is represented by *
-		else{
-			output_text_sequence[output_length++] = '*';
-		}
-
-		char_seq_length = 0;
-		memset(char_morse_sequence, 0, 10);
-	}
+        char_seq_length = 0;
+        memset(char_morse_sequence, 0, 10);
+    }
 }
 
 #endif /* SRC_MORSETRANSLATOR_H_ */
