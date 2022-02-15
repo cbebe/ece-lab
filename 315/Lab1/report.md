@@ -20,6 +20,12 @@ First, we define the global variables to complete the execution of this part, fo
 
 In part 2 of the lab, we are required to implement a system in which, when a keypad key corresponding to a decimal digit is pressed, the corresponding digit will be displayed on the sdk terminal. Inputs from the keys A, B, C, D and F are to be ignored. The program is then required to interpret the two inputted digits as operands and give the ability to perform various functions like AND, OR, XOR and Modulo function using the operands.
 
+For the setup, we added a bitmask to activate the button GPIO pins to take in input. We handled the A, B, C, D, F keys by printing a message in the console that these keys are ignored. We then added the key to the queue if it was a number. Then, we dynamically change the priority of the task if the queue is full (i.e., it has two items waiting). This places the Rx task as the highest-priority task,
+
+In the Rx task, we receive the two numbers from the queue using `xQueueReceive()`. We then read the button input and handle each button value with a switch statement to get the result of the binary operation. If no button was pressed, or multiple buttons are pressed, we take in the input again.
+
+We also set a `modulo_error` flag if the modulo divisor is zero in a modulo division operation. We then display the result for 3 seconds by using a `for` loop to display the two-digit answer. If `modulo_error` was set, we display -1 instead. To do this, we had to add an additional case in the `SSD_Decode` function to handle `NEGATIVE_SIGN`. We then transfer the scheduler back to the Tx task by reverting its priority level to its original value.
+
 # Exercise 3: A Simple calculator
 
 In part 3 of the lab, our goal is to program a simple calculator which can perform four-functions. These operations include addition, subtraction, multiplication and the ability to check if the entered number is a palindrome which is selected using the keys ‘A’, ‘B’, ‘C’ and ‘D’ respectively. The answer of all the operations will be shown in the SDK terminal.
