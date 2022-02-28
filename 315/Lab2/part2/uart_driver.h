@@ -55,15 +55,18 @@ void Interrupt_Handler(void *CallBackRef, u32 Event, unsigned int EventData)
 
 			/*******************************************************/
 			//add one line of code to increment the receive interrupt counter variable
-			
+			CountRxIrq++;
 			/*******************************************************/
 
 			/*******************************************************/
 			//implement the logic to check if there are received bytes from the UART. If yes, then read them and send it to the back of the receive queue.
 			//Make sure to use proper queue function in the ISR! That is use the FromISR queue methods to secure the queues for ISR.
 			//the UART received byte will be read inside the u8 "receive_buffer" variable already declared for you!
-		
-		
+			// Unsure about this section since it doesn't parallel with the MySendByte procedure
+			if (XUartPs_IsReceiveData(UART.Config.BaseAddress)) {
+				XUartPs_Recv(&UART, &receive_buffer, 1);
+				xQueueSendToBackFromISR(xQueue_for_receive, &receive_buffer, &xHigherPriorityTaskWoken);
+			}
 			/*******************************************************/
 			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 	}
@@ -73,7 +76,7 @@ void Interrupt_Handler(void *CallBackRef, u32 Event, unsigned int EventData)
 
 		/*******************************************************/
 		//add one line of code to increment the transmit interrupt counter variable
-		
+		CountTxIrq++;
 		/*******************************************************/
 
 			//case when there are bytes inside the transmit byte and TxFIFO is not Full yet!
@@ -82,8 +85,8 @@ void Interrupt_Handler(void *CallBackRef, u32 Event, unsigned int EventData)
 				//write two lines of code to read the data from the front of the transmit queue and then send it to the UART.
 				//Make sure to use proper queue function in the ISR! That is use the FromISR queue methods to secure the queues for ISR.
 				//the data is read into the variable "transmit_data" variable from the front of the transmit queue. Now, send this data to the UART using an appropriate function.
-				
-				
+				xQueueReceiveFromISR(xQueue_for_transmit, &transmit_data, &xHigherPriorityTaskWoken);
+				XUartPs_Send(&UART, &transmit_data, 1);
 				/*******************************************************/
 			}
 			portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
@@ -110,8 +113,11 @@ BaseType_t MyIsReceiveData( void ){
 
 	/*******************************************************/
 	//write the code to return pdTRUE if there is newly received data into the receive queue else return pdFALSE.
-	
-	
+	BaseType_t hasNewMessage;
+	taskENTER_CRITICAL();
+	hasNewMessage = uxQueueMessagesWaiting(xQueue_for_receive) != 0 ? pdTRUE : pdFALSE;
+	taskEXIT_CRITICAL();
+	return hasNewMessage;
 	/*******************************************************/
 }
 
@@ -121,8 +127,9 @@ u8 MyReceiveByte( void ){
 	/*******************************************************/
 	//write the code to return the 8-bit value that is present inside the received queue of the UART.
 	//use the "recv" variable to read the queue value.
-	
-	
+	if (xQueueReceive(xQueue_for_receive, &recv, 0UL) != pdPASS) {
+		xil_printf("Failed to receive data\n");
+	}
 	/*******************************************************/
 
 	taskEXIT_CRITICAL();
@@ -133,7 +140,11 @@ BaseType_t MyIsTransmitFull( void ) {
 
 	/*******************************************************/
 	//write the code to return pdTRUE if the transmit queue data structure is FULL else return pdFALSE.
-	
+	BaseType_t isQueueFull;
+	taskENTER_CRITICAL();
+	isQueueFull = uxQueueSpacesAvailable(xQueue_for_transmit) == 0 ? pdTRUE : pdFALSE;
+	taskEXIT_CRITICAL();
+	return isQueueFull;
 	/*******************************************************/
 
 }
@@ -147,8 +158,8 @@ void MySendByte( u8 Data ) {
 	//add the code to enable TEMPTY interrupt bit. You can first read the interrupt mask and then set the interrupt mask using the XUARTPS_IXR_TXEMPTY.
 	//see the ISR code for transmit Interrupt event where there is a mechanism to first read the interrupt mask and then set it as user wants.
 	//But the difference is, here you have to "enable" the XUARTPS_IXR_TXEMPTY bit.! In ISR, we have disabled this bit!
-
-
+	mask = XUartPs_GetInterruptMask(&UART);
+	XUartPs_SetInterruptMask(&UART, mask | XUARTPS_IXR_TXEMPTY);
 	/*******************************************************/
 
 	//if transmit FIFO empty, use polling, otherwise insert to queue for interrupt method
