@@ -6,7 +6,6 @@
  *      References: Xilinx UART and interrupt drivers files
  */
 
-
 #include "xil_io.h"
 #include "xuartps.h" //UART definitions header file
 #include "xscugic.h" //interrupt controller header file
@@ -28,7 +27,7 @@
 XUartPs UART; 				//UART Instance
 XUartPs_Config *Config; 	//Pointer to UART
 INTC InterruptController; 	//Interrupt controller instance
-u32 IntrMask;				//interrupt mask variable to be used to enable different type of interrupt on Rx and Tx in UART
+u32 IntrMask;//interrupt mask variable to be used to enable different type of interrupt on Rx and Tx in UART
 
 //UART interrupt control ISR declaration
 void Interrupt_Handler(void *CallBackRef, u32 Event, unsigned int EventData);
