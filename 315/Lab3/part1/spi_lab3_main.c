@@ -175,7 +175,14 @@ static void TaskUartManager(void *pvParameters) {
 				//Also wait on to receive the bytes coming from the SPIMaster task via FIFO2
 				//If there is space on the Transmitter UART side, send it to the UART using an appropriate UART write function.
 
+				xQueueSendToBack(xQueue_FIFO1, &dummy, portMAX_DELAY);
+				xQueueReceive(xQueue_FIFO2, &task1_receive_from_FIFO2, portMAX_DELAY);
+				while (XUartPs_IsTransmitFull(XPAR_XUARTPS_0_BASEADDR) == TRUE)
+					;
+				XUartPs_WriteReg(XPAR_XUARTPS_0_BASEADDR, XUARTPS_FIFO_OFFSET,
+						task1_receive_from_FIFO2);
 				/*******************************************/
+
 			}
 			flag = 0;
 		} else {
@@ -250,8 +257,14 @@ static void TaskSpi0Master(void *pvParameters) {
 			//Finally, you want to use the read from master implementation using the function from the driver file provided. Then send the data to the back of the FIFO2 and reset the "bytecount" variable to zero.
 			bytecount++;
 			if (bytecount == TRANSFER_SIZE_IN_BYTES) {
-
+				send_buffer[0] = task2_receive_from_FIFO1;
+				SpiMasterWrite(send_buffer, TRANSFER_SIZE_IN_BYTES);
+				taskYIELD();
+				send_SPI_data_via_FIFO2 = SpiMasterRead(TRANSFER_SIZE_IN_BYTES);
+				xQueueSendToBack(xQueue_FIFO2, &send_SPI_data_via_FIFO2, 0UL);
+				bytecount = 0;
 			}
+
 			/*******************************************/
 
 		}
@@ -279,7 +292,33 @@ static void TaskSpi1Slave(void *pvParameters) {
 		//Once \r#\r is detected you want to now send the message string and you may use a looping method to send it to the SPI master.
 		if (spi_master_loopback_en == 0
 				&& current_command_execution_flag == 2) {
+			SpiSlaveRead(TRANSFER_SIZE_IN_BYTES);
+			for (int i = 0; i < TRANSFER_SIZE_IN_BYTES; ++i) {
+				temp_store = RxBuffer_Slave[i];
+				num_received++;
+				if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 2) {
+					end_sequence_flag += 1;
+				} else if (temp_store == CHAR_POUND_HASH && end_sequence_flag == 1)
+					end_sequence_flag += 1;
+				else if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 0)
+					end_sequence_flag += 1;
+				else
+					end_sequence_flag = 0;
 
+				SpiSlaveWrite(&temp_store, TRANSFER_SIZE_IN_BYTES);
+			}
+			if (end_sequence_flag == 3) {
+
+				sprintf(buffer, "The number of characters received over SPI:%d\n", num_received);
+
+				for (int i = 0; i < strlen(buffer); i+= TRANSFER_SIZE_IN_BYTES) {
+					temp_store = buffer[i];
+					SpiSlaveWrite(&temp_store, TRANSFER_SIZE_IN_BYTES);
+				}
+				num_received = 0;
+				end_sequence_flag = 0;
+			}
+			flag = 1;
 		}
 		/*******************************************/
 
