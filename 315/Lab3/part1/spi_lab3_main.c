@@ -318,7 +318,6 @@ static void TaskSpi1Slave(void *pvParameters) {
 				num_received = 0;
 				end_sequence_flag = 0;
 			}
-			flag = 1;
 		}
 		/*******************************************/
 
