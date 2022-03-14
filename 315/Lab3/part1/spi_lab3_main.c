@@ -174,7 +174,6 @@ static void TaskUartManager(void *pvParameters) {
 				//write the logic to send the "dummy" control character using the FIFO1
 				//Also wait on to receive the bytes coming from the SPIMaster task via FIFO2
 				//If there is space on the Transmitter UART side, send it to the UART using an appropriate UART write function.
-
 				xQueueSendToBack(xQueue_FIFO1, &dummy, portMAX_DELAY);
 				xQueueReceive(xQueue_FIFO2, &task1_receive_from_FIFO2, portMAX_DELAY);
 				while (XUartPs_IsTransmitFull(XPAR_XUARTPS_0_BASEADDR) == TRUE)
@@ -293,28 +292,31 @@ static void TaskSpi1Slave(void *pvParameters) {
 		if (spi_master_loopback_en == 0
 				&& current_command_execution_flag == 2) {
 			SpiSlaveRead(TRANSFER_SIZE_IN_BYTES);
-			for (int i = 0; i < TRANSFER_SIZE_IN_BYTES; ++i) {
-				temp_store = RxBuffer_Slave[i];
-				num_received++;
-				if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 2) {
-					end_sequence_flag += 1;
-				} else if (temp_store == CHAR_POUND_HASH && end_sequence_flag == 1)
-					end_sequence_flag += 1;
-				else if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 0)
-					end_sequence_flag += 1;
-				else
-					end_sequence_flag = 0;
 
-				SpiSlaveWrite(&temp_store, TRANSFER_SIZE_IN_BYTES);
-			}
+			temp_store = RxBuffer_Slave[0];
+			num_received++;
+			if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 2)
+				end_sequence_flag += 1;
+			else if (temp_store == CHAR_POUND_HASH && end_sequence_flag == 1)
+				end_sequence_flag += 1;
+			else if (temp_store == CHAR_CARRIAGE_RETURN && end_sequence_flag == 0)
+				end_sequence_flag += 1;
+			else
+				end_sequence_flag = 0;
+
+			SpiSlaveWrite(&temp_store, TRANSFER_SIZE_IN_BYTES);
+
 			if (end_sequence_flag == 3) {
+				flag = 1;
 
-				sprintf(buffer, "The number of characters received over SPI:%d\n", num_received);
+				sprintf(buffer, "The number of characters received over SPI: %d\n", num_received);
+				str_length = strlen(buffer);
 
-				for (int i = 0; i < strlen(buffer); i+= TRANSFER_SIZE_IN_BYTES) {
-					temp_store = buffer[i];
-					SpiSlaveWrite(&temp_store, TRANSFER_SIZE_IN_BYTES);
+				for (int i = 0; i < str_length; i+= TRANSFER_SIZE_IN_BYTES) {
+					SpiSlaveRead(TRANSFER_SIZE_IN_BYTES);
+					SpiSlaveWrite((u8*) &buffer[i], TRANSFER_SIZE_IN_BYTES);
 				}
+
 				num_received = 0;
 				end_sequence_flag = 0;
 			}
