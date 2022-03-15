@@ -25,3 +25,31 @@ When the terminating sequence is sent, the UART task sends dummy control charact
 # Exercise 2
 
 In this exercise, our goal is to find the `loop_count` necessary to affect the CPU load.
+
+## Design Summary
+
+The program contains three tasks.
+
+- `TaskCpuLoadGen` is responsible for the artificial CPU load by doing a bitwise complement on a single variable `loop_count` times.
+
+- `TaskPrintRunTimeStats` runs every 4 seconds to print the runtime stats by retrieving it using `vTaskGetRunTimeStats`.
+
+- `TaskLoopCountProcessor` runs every 60 seconds to increase the loop count of the CPU load, giving more processor time to `TaskCpuLoadGen` and taking cycles away from the IDLE task. It also stabilizes the increase by changing the interval to 90 seconds at `loop_count >= 500000` and then to 120 seconds at `loop_count >= 1000000`.
+
+## Results
+
+`loop_count`: incremented by 50k  
+every 60 seconds at `loop_count` < 500000  
+every 90 seconds at `loop_count` >= 500000  
+every 120 seconds at `loop_count` >= 1000000
+
+Starting at `loop_count` = 0:
+
+| IDLE time | `loop_count` |
+| --------- | ------------ |
+| 90%       | 150,000      |
+| 80%       | 300,000      |
+| 70%       | 450,000      |
+| 60%       | 600,000      |
+| 50%       | 700,000      |
+| 40%       | 1,250,000    |
