@@ -8,30 +8,20 @@ author: Charles Ancheta (1581672), Pushkar Sabharwal (1588927)
 
 # Objectives
 
+The objective of this lab is to explore SPI communication with both the master and slave modes. We also aim to use `vTaskGetRunTimeStats()` to measure the load of an artificially expensive computing task.
+
 # Exercise 1
+
+In this exercise, our goal is to send and receive bytes through the SPI interface and count the number of bytes that went through.
 
 ## Design Summary
 
-<!-- TODO: Write brief summary of design -->
+The program contains three tasks, `TaskUartManager`, `TaskSpi0Master`, and `TaskSpi1Slave`. There are two flags that we can toggle to enable loopback between the UART and the SPI master. If UART loopback is enabled, the program simply prints back the message without moving bytes through any queues. If the SPI master loopback is enabled, it moves the bytes through the FIFO queues without sending them through the SPI. The following diagram illustrates this more clearly:
+
+![](diagram.jpg)
+
+When the terminating sequence is sent, the UART task sends dummy control characters to make the Master "push out" the message from the Slave task through the SPI.
 
 # Exercise 2
 
-## Design Summary
-
-<!-- TODO: Write brief summary of design -->
-
-# Discussion
-
-1. Justify the need for each of the critical sections that you identified in the driver functions. What could happen if a critical section is not protected?
-
-2. Why should user tasks not be required to enable and disable interrupts in either the receive or transmit directions?
-
-Enabling and disabling interrupts are hardware-specific and should be abstracted away for these user tasks using drivers or libraries.
-
-3. In the interrupt service routine, does it matter if the transmit interrupts are handled before the receive interrupts, or vice versa? Is there is a better order for handling interrupts in the receive and transmit directions? Explain why one order is better.
-
-4. Why must transmit interrupts be disabled when there is no more data to transmit? What would happen if transmit interrupts were to be left enabled in that case?
-
-5. Can receive interrupts be left on, or should they ever be disabled?
-
-6. Justify the numbers that you found being produced by the three status messages for the blocks of characters that were send to the Zybo Z7 board. If possible, use a small example to explain these numbers.
+In this exercise, our goal is to find the `loop_count` necessary to affect the CPU load.

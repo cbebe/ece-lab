@@ -1,12 +1,17 @@
-SRC := part1/lab2_part1.c part1/morseTranslator.h \
-	   part2/initialization.c part2/initialization.h \
-	   part2/part2_lab2_main.c part2/uart_driver.h
+SRC := \
+		part1/spi_lab3_main.c \
+		part2/load_gen_main.c \
+	
+ZIP := lab_3.zip
 
-lab_2.zip: $(SRC) report.pdf 
+$(ZIP): $(SRC) report.pdf 
 	zip -r $@ $^
 
 # Pandoc is pretty bloated, up to you guys if you wanna use it
 %.pdf: %.md
 	pandoc $< -o $@
+
+clean:
+	rm -rf $(ZIP) report.pdf
 
 .PHONY: all
