@@ -409,7 +409,7 @@ static void _Task_Motor( void *pvParameters ){
 
 		/**********************************************************************************************/
 		// get the motor parameters from the queue (FIFO1). The structure "decision_parameters" to store the received queue has been declared in this task for you.
-
+		xQueueReceive(xQueue_FIFO1, &read_motor_parameters_from_queue, portMAX_DELAY);
 
 		/**********************************************************************************************/
 
@@ -426,8 +426,15 @@ static void _Task_Motor( void *pvParameters ){
 		// For example, the first destination-delay pair has value <2048,1000> which means motor should move to position 2048 and then dwell for 1000 ms at this position.
 		// Find the function from the driver code that will help to move the motor by an absolute number of target steps.! The function is mentioned in the handout as well.
 		// Once the motor reaches the desired position, disable the motor and then execute the dwell time delay using the conventional vTaskDelay().
+		Stepper_setSpeedInStepsPerSecond(read_motor_parameters_from_queue->rotational_speed);
+		Stepper_setAccelerationInStepsPerSecondPerSecond(read_motor_parameters_from_queue->rotational_acceleration);
+		Stepper_setDecelerationInStepsPerSecondPerSecond(read_motor_parameters_from_queue->rotational_deceleration);
+		Stepper_setCurrentPositionInSteps(read_motor_parameters_from_queue->currentposition_in_steps);
 
-
+		for (int i = 0; i < sequenceIndex; i++) {
+			Stepper_moveRelativeInSteps(positionSequence[i][0]);
+			vTaskDelay(pdMS_TO_TICKS(positionSequence[i][1]));
+		}
 
 		/**********************************************************************************************/
 
@@ -451,7 +458,7 @@ static void _Task_Emerg_Stop( void *pvParameters ){
 		/**********************************************************************************************/
 		//Read the Button value inside the variable "btnState"
 		//i.e., poll the button
-
+		btnState = XGpio_DiscreteRead(&BTNInst, 0);
 
 		/**********************************************************************************************/
 
@@ -469,7 +476,12 @@ static void _Task_Emerg_Stop( void *pvParameters ){
 			//Inside an infinite loop, flash the Red light on RGB led at 2Hz.
 			//The Object Instance for RGB led is "Red_RGBInst".
 
+			sequenceIndex = 0;
 
+
+			while(1) {
+
+			}
 
 			/**********************************************************************************************/
 		}
