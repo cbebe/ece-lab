@@ -12,6 +12,12 @@ The objective of this lab is to gain experience in operating a stepper motor in 
 
 ## Design Summary
 
+### Board Setup
+
+![](board.jpg)
+
+### Software
+
 The program contains three tasks. `_Task_Uart` is responsible for the user interface, parsing input into the stepper motor parameters. `_Task_Motor` is responsible for moving the stepper motor. `_Task_Emerg_Stop` is responsible for polling the emergency stop button and immediately stopping the stepper motor.
 
 # Exercise 1
